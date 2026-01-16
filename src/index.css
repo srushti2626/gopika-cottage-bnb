@@ -16,9 +16,9 @@
     --popover: 35 30% 97%;
     --popover-foreground: 25 25% 15%;
 
-    /* Forest Green Primary */
-    --primary: 152 35% 28%;
-    --primary-foreground: 35 30% 97%;
+    /* Warm Yellow Primary */
+    --primary: 45 85% 50%;
+    --primary-foreground: 25 25% 15%;
 
     /* Warm Cream Secondary */
     --secondary: 35 35% 90%;
@@ -37,7 +37,7 @@
 
     --border: 35 20% 85%;
     --input: 35 20% 88%;
-    --ring: 152 35% 28%;
+    --ring: 45 85% 50%;
 
     --radius: 0.75rem;
 
@@ -48,22 +48,22 @@
     /* Gradients */
     --gradient-hero: linear-gradient(135deg, hsl(35 30% 97% / 0.9), hsl(35 25% 94% / 0.85));
     --gradient-overlay: linear-gradient(180deg, hsl(25 25% 15% / 0.3) 0%, hsl(25 25% 15% / 0.7) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(152 35% 28%), hsl(152 40% 22%));
+    --gradient-accent: linear-gradient(135deg, hsl(45 85% 50%), hsl(42 80% 45%));
     --gradient-gold: linear-gradient(135deg, hsl(38 70% 50%), hsl(35 65% 45%));
 
     /* Shadows */
     --shadow-soft: 0 4px 20px -4px hsl(25 25% 15% / 0.1);
     --shadow-elevated: 0 12px 40px -8px hsl(25 25% 15% / 0.15);
-    --shadow-glow: 0 0 30px hsl(152 35% 28% / 0.2);
+    --shadow-glow: 0 0 30px hsl(45 85% 50% / 0.25);
 
     --sidebar-background: 35 25% 95%;
     --sidebar-foreground: 25 25% 20%;
-    --sidebar-primary: 152 35% 28%;
-    --sidebar-primary-foreground: 35 30% 97%;
+    --sidebar-primary: 45 85% 50%;
+    --sidebar-primary-foreground: 25 25% 15%;
     --sidebar-accent: 35 35% 90%;
     --sidebar-accent-foreground: 25 25% 20%;
     --sidebar-border: 35 20% 85%;
-    --sidebar-ring: 152 35% 28%;
+    --sidebar-ring: 45 85% 50%;
   }
 
   .dark {
@@ -76,7 +76,7 @@
     --popover: 25 25% 10%;
     --popover-foreground: 35 25% 95%;
 
-    --primary: 152 40% 45%;
+    --primary: 45 90% 55%;
     --primary-foreground: 25 25% 10%;
 
     --secondary: 25 20% 18%;
@@ -93,16 +93,16 @@
 
     --border: 25 15% 22%;
     --input: 25 15% 22%;
-    --ring: 152 40% 45%;
+    --ring: 45 90% 55%;
 
     --sidebar-background: 25 20% 12%;
     --sidebar-foreground: 35 25% 90%;
-    --sidebar-primary: 152 40% 45%;
+    --sidebar-primary: 45 90% 55%;
     --sidebar-primary-foreground: 25 25% 10%;
     --sidebar-accent: 25 15% 18%;
     --sidebar-accent-foreground: 35 25% 90%;
     --sidebar-border: 25 15% 22%;
-    --sidebar-ring: 152 40% 45%;
+    --sidebar-ring: 45 90% 55%;
   }
 }
 

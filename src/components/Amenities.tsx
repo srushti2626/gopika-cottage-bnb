@@ -5,9 +5,7 @@ import {
   Thermometer,
   Droplets,
   Zap,
-  Tv,
-  Coffee,
-  Mountain,
+  Waves,
   ShowerHead,
   Flame,
   TreePine,
@@ -46,19 +44,9 @@ const Amenities = () => {
       description: "Uninterrupted power supply",
     },
     {
-      icon: Tv,
-      name: "Smart TV",
-      description: "Entertainment with streaming services",
-    },
-    {
-      icon: Coffee,
-      name: "Tea/Coffee Maker",
-      description: "Start your mornings right",
-    },
-    {
-      icon: Mountain,
-      name: "Mountain View",
-      description: "Stunning views from every room",
+      icon: Waves,
+      name: "Beach View",
+      description: "Stunning ocean views from every room",
     },
     {
       icon: ShowerHead,

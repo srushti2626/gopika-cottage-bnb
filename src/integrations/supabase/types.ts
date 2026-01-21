@@ -337,6 +337,22 @@ export type Database = {
       }
     }
     Functions: {
+      get_blocked_dates: {
+        Args: never
+        Returns: {
+          blocked_date: string
+          id: string
+          room_id: string
+        }[]
+      }
+      get_booking_availability: {
+        Args: never
+        Returns: {
+          check_in_date: string
+          check_out_date: string
+          room_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

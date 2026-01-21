@@ -21,11 +21,9 @@ interface BlockedDate {
 }
 
 interface Booking {
-  id: string;
   room_id: string;
   check_in_date: string;
   check_out_date: string;
-  status: string;
 }
 
 export function useRoomAvailability() {
@@ -52,17 +50,17 @@ export function useRoomAvailability() {
 
       // Fetch blocked dates
       const { data: blockedData, error: blockedError } = await supabase
-        .from("blocked_dates")
-        .select("*");
+        // Public view exposes only the minimal data required for availability
+        .from("blocked_dates_public")
+        .select("id, room_id, blocked_date");
 
       if (blockedError) throw blockedError;
       setBlockedDates(blockedData || []);
 
-      // Fetch existing bookings (pending or confirmed)
+      // Fetch existing bookings availability (public view; no guest info)
       const { data: bookingsData, error: bookingsError } = await supabase
-        .from("bookings")
-        .select("id, room_id, check_in_date, check_out_date, status")
-        .in("status", ["pending", "confirmed"]);
+        .from("booking_availability")
+        .select("room_id, check_in_date, check_out_date");
 
       if (bookingsError) throw bookingsError;
       setExistingBookings(bookingsData || []);

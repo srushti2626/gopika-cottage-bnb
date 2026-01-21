@@ -40,9 +40,14 @@ const Navbar = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-4">
-            <a href="tel:+919876543210" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <a 
+              href="https://www.justdial.com/Alibaug/Gopika-Cottage-Near-Chamunda-Devi-Temple-Kihim/9999PX22-X22-191205125956-V6F7_BZDET" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
               <Phone className="w-4 h-4" />
-              <span>+91 98765 43210</span>
+              <span>9969759811 / 8369564979</span>
             </a>
             <Button variant="hero" size="lg" asChild>
               <a href="#booking">Book Now</a>

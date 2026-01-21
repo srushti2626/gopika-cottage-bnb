@@ -283,7 +283,58 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      blocked_dates_public: {
+        Row: {
+          blocked_date: string | null
+          id: string | null
+          room_id: string | null
+        }
+        Insert: {
+          blocked_date?: string | null
+          id?: string | null
+          room_id?: string | null
+        }
+        Update: {
+          blocked_date?: string | null
+          id?: string | null
+          room_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocked_dates_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_availability: {
+        Row: {
+          check_in_date: string | null
+          check_out_date: string | null
+          room_id: string | null
+        }
+        Insert: {
+          check_in_date?: string | null
+          check_out_date?: string | null
+          room_id?: string | null
+        }
+        Update: {
+          check_in_date?: string | null
+          check_out_date?: string | null
+          room_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {

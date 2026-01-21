@@ -1,1 +1,4 @@
 project_id = "rrpzaxzskmpmmzbdrsqb"
+
+[functions.create-booking]
+verify_jwt = false

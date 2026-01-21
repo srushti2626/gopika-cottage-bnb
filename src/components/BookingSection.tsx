@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { useRoomAvailability } from "@/hooks/useRoomAvailability";
 import type { Database } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
 type RoomType = Database["public"]["Enums"]["room_type"];
@@ -45,6 +46,7 @@ const BookingSection = () => {
   const [children, setChildren] = useState(0);
   const [specialRequests, setSpecialRequests] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const { loading, checkAvailability, getPriceByRoomType, getUnavailableDatesForRoomType } =
     useRoomAvailability();
@@ -85,7 +87,7 @@ const BookingSection = () => {
     }
   };
 
-  const handleBooking = () => {
+  const handleBooking = async () => {
     if (!checkIn || !checkOut) {
       toast({
         title: "Missing Dates",
@@ -113,11 +115,55 @@ const BookingSection = () => {
       return;
     }
 
-    // This would proceed to payment
-    toast({
-      title: "Booking Request Submitted!",
-      description: `Check-in: ${format(checkIn, "PPP")}, Check-out: ${format(checkOut, "PPP")}, Total: ₹${total.toLocaleString()}`,
-    });
+    try {
+      setSubmitting(true);
+      const { data, error } = await supabase.functions.invoke("create-booking", {
+        body: {
+          roomType,
+          checkInDate: format(checkIn, "yyyy-MM-dd"),
+          checkOutDate: format(checkOut, "yyyy-MM-dd"),
+          fullName,
+          mobileNumber,
+          email,
+          adults,
+          children,
+          specialRequests: specialRequests.trim() ? specialRequests.trim() : null,
+        },
+      });
+
+      if (error) {
+        toast({
+          title: "Booking Failed",
+          description: error.message || "Please try again in a moment.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Booking Request Submitted!",
+        description: `Booking ID: ${data?.bookingId ?? "(pending)"}. Total: ₹${total.toLocaleString()}`,
+      });
+
+      // Reset form (keep roomType)
+      setCheckIn(undefined);
+      setCheckOut(undefined);
+      setFullName("");
+      setMobileNumber("");
+      setEmail("");
+      setAdults(2);
+      setChildren(0);
+      setSpecialRequests("");
+      setErrors({});
+    } catch (e) {
+      toast({
+        title: "Booking Failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const isFormValid =
@@ -512,11 +558,18 @@ const BookingSection = () => {
                     size="xl"
                     className="w-full mt-8"
                     onClick={handleBooking}
-                    disabled={!isFormValid}
+                    disabled={!isFormValid || submitting}
                   >
-                    {!availability.available && checkIn && checkOut
-                      ? "Not Available"
-                      : "Confirm Booking"}
+                    {submitting ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Submitting...
+                      </span>
+                    ) : !availability.available && checkIn && checkOut ? (
+                      "Not Available"
+                    ) : (
+                      "Confirm Booking"
+                    )}
                   </Button>
 
                   <p className="text-xs text-muted-foreground text-center mt-4">

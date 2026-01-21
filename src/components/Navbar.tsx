@@ -1,9 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthed(!!session);
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      setIsAuthed(!!data.session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const navLinks = [
     { name: "Home", href: "#home" },
@@ -52,6 +67,21 @@ const Navbar = () => {
             <Button variant="hero" size="lg" asChild>
               <a href="#booking">Book Now</a>
             </Button>
+
+            {/* Minimal auth entrypoint (for staff/admin) */}
+            {isAuthed ? (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => supabase.auth.signOut()}
+              >
+                Logout
+              </Button>
+            ) : (
+              <Button variant="outline" size="lg" asChild>
+                <Link to="/auth">Admin Login</Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -82,6 +112,33 @@ const Navbar = () => {
                 <Button variant="hero" size="lg" className="w-full" asChild>
                   <a href="#booking">Book Now</a>
                 </Button>
+
+                <div className="mt-3">
+                  {isAuthed ? (
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full"
+                      onClick={() => {
+                        supabase.auth.signOut();
+                        setIsOpen(false);
+                      }}
+                    >
+                      Logout
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full"
+                      asChild
+                    >
+                      <Link to="/auth" onClick={() => setIsOpen(false)}>
+                        Admin Login
+                      </Link>
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

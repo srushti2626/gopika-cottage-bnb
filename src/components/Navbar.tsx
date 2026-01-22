@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import gopikaCottageLogo from "@/assets/gopika-cottage-logo.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,10 +36,12 @@ const Navbar = () => {
       <div className="container-cottage">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <a href="#home" className="flex items-center gap-2">
-            <span className="font-heading text-2xl md:text-3xl font-semibold text-primary">
-              Gopika Cottage
-            </span>
+          <a href="#home" className="flex items-center">
+            <img 
+              src={gopikaCottageLogo} 
+              alt="Gopika Cottage" 
+              className="h-12 md:h-16 w-auto"
+            />
           </a>
 
           {/* Desktop Navigation */}

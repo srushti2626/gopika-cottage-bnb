@@ -40,8 +40,8 @@ const Footer = () => {
               </span>
             </a>
             <p className="text-background/70 mb-6 leading-relaxed">
-              Your perfect mountain retreat nestled in the serene hills of 
-              Uttarakhand. Experience nature, comfort, and genuine hospitality.
+              Your perfect beach retreat near Chamunda Devi Temple in Kihim, Alibaug. 
+              Experience nature, comfort, and genuine hospitality by the sea.
             </p>
             <div className="flex gap-4">
               {socialLinks.map((social) => (
@@ -105,17 +105,34 @@ const Footer = () => {
                 <span className="block text-background/50 text-sm mb-1">
                   Address
                 </span>
-                Hillside Valley, Near Pine Forest,
+                Gopika Cottage, Near Chamunda Devi Temple,
                 <br />
-                Uttarakhand 263601, India
+                At & Post Kihim, Tal- Alibag,
+                <br />
+                Kihim, Alibaug-402201, Maharashtra
               </li>
               <li>
                 <span className="block text-background/50 text-sm mb-1">
                   Phone
                 </span>
-                <a href="tel:+919876543210" className="hover:text-background">
-                  +91 98765 43210
-                </a>
+                <div className="space-y-1">
+                  <a 
+                    href="https://www.justdial.com/Alibaug/Gopika-Cottage-Near-Chamunda-Devi-Temple-Kihim/9999PX22-X22-191205125956-V6F7_BZDET" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-background block"
+                  >
+                    Suraj Mhatre – 9969759811
+                  </a>
+                  <a 
+                    href="https://www.justdial.com/Alibaug/Gopika-Cottage-Near-Chamunda-Devi-Temple-Kihim/9999PX22-X22-191205125956-V6F7_BZDET" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-background block"
+                  >
+                    Sachin Mhatre – 8369564979
+                  </a>
+                </div>
               </li>
               <li>
                 <span className="block text-background/50 text-sm mb-1">

@@ -72,15 +72,20 @@ const Navbar = () => {
               <a href="#booking">Book Now</a>
             </Button>
 
-            {/* Minimal auth entrypoint (for staff/admin) */}
+            {/* Admin entrypoint (for staff/admin) */}
             {isAuthed ? (
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => supabase.auth.signOut()}
-              >
-                Logout
-              </Button>
+              <>
+                <Button variant="outline" size="lg" asChild>
+                  <Link to="/admin">Dashboard</Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  onClick={() => supabase.auth.signOut()}
+                >
+                  Logout
+                </Button>
+              </>
             ) : (
               <Button variant="outline" size="lg" asChild>
                 <Link to="/auth">Admin Login</Link>
@@ -117,19 +122,26 @@ const Navbar = () => {
                   <a href="#booking">Book Now</a>
                 </Button>
 
-                <div className="mt-3">
+                <div className="mt-3 flex flex-col gap-2">
                   {isAuthed ? (
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="w-full"
-                      onClick={() => {
-                        supabase.auth.signOut();
-                        setIsOpen(false);
-                      }}
-                    >
-                      Logout
-                    </Button>
+                    <>
+                      <Button variant="outline" size="lg" className="w-full" asChild>
+                        <Link to="/admin" onClick={() => setIsOpen(false)}>
+                          Dashboard
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        className="w-full"
+                        onClick={() => {
+                          supabase.auth.signOut();
+                          setIsOpen(false);
+                        }}
+                      >
+                        Logout
+                      </Button>
+                    </>
                   ) : (
                     <Button
                       variant="outline"

@@ -22,28 +22,28 @@ const Hero = () => {
           <div className="inline-flex items-center gap-2 bg-background/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6 animate-fade-in">
             <Star className="w-4 h-4 text-accent fill-accent" />
             <span className="text-sm font-medium text-background">
-              Top Rated Mountain Retreat
+              Top Rated Beach Retreat
             </span>
           </div>
 
           {/* Heading */}
           <h1 className="heading-display text-background mb-6 animate-fade-in-up">
             Your Perfect{" "}
-            <span className="text-accent">Mountain Escape</span>{" "}
+            <span className="text-accent">Beach Escape</span>{" "}
             Awaits
           </h1>
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-background/90 font-light mb-8 leading-relaxed animate-fade-in-delay">
-            Nestled in the serene hills, Gopika Cottage offers a tranquil retreat 
-            where nature meets comfort. Experience the perfect blend of rustic charm 
+            Nestled near Chamunda Devi Temple in Kihim, Gopika Cottage offers a tranquil retreat 
+            where nature meets comfort. Experience the perfect blend of coastal charm 
             and modern amenities.
           </p>
 
           {/* Location */}
           <div className="flex items-center gap-2 text-background/80 mb-8 animate-fade-in-delay">
             <MapPin className="w-5 h-5" />
-            <span className="font-medium">Hillside Valley, Uttarakhand, India</span>
+            <span className="font-medium">Kihim, Alibaug, Maharashtra, India</span>
           </div>
 
           {/* CTA Buttons */}

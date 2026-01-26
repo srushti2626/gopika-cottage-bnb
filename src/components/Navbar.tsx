@@ -49,12 +49,12 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <a href="#home" className="flex items-center">
-            <img src={gopikaCottageLogo} alt="Gopika Cottage" className="h-12 md:h-16 w-auto object-cover border-0 rounded-3xl border-none shadow-2xl opacity-80" />
+            <img src={gopikaCottageLogo} alt="Gopika Cottage" className="h-12 md:h-16 w-auto object-cover border-0 border-none opacity-80 rounded-none shadow-none" />
           </a>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">
-            {navLinks.map(link => <a key={link.name} href={link.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200">
+            {navLinks.map(link => <a key={link.name} href={link.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 mx-0 my-0 px-0 py-[2px] font-serif border-0">
                 {link.name}
               </a>)}
           </div>

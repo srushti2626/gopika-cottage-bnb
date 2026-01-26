@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, CalendarDays, LayoutDashboard, RefreshCw } from "lucide-react";
+import { ArrowLeft, CalendarDays, LayoutDashboard, RefreshCw, BedDouble } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Database } from "@/integrations/supabase/types";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { BookingsTable } from "@/components/admin/BookingsTable";
 import { BlockedDatesManager } from "@/components/admin/BlockedDatesManager";
+import { RoomsManager } from "@/components/admin/RoomsManager";
 
 type Booking = Database["public"]["Tables"]["bookings"]["Row"];
 type BookingStatus = Database["public"]["Enums"]["booking_status"];
@@ -131,6 +132,10 @@ export default function Admin() {
               <CalendarDays className="h-4 w-4" />
               Blocked Dates
             </TabsTrigger>
+            <TabsTrigger value="rooms" className="gap-2">
+              <BedDouble className="h-4 w-4" />
+              Rooms
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="bookings" className="space-y-6">
@@ -223,6 +228,10 @@ export default function Admin() {
                 <BlockedDatesManager />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="rooms">
+            <RoomsManager />
           </TabsContent>
         </Tabs>
       </main>

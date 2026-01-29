@@ -48,7 +48,7 @@ const BookingSection = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const { loading, checkAvailability, getPriceByRoomType, getUnavailableDatesForRoomType } =
+  const { loading, checkAvailability, getPriceByRoomType, getUnavailableDatesForRoomType, rooms } =
     useRoomAvailability();
 
   const availability = checkAvailability(checkIn, checkOut, roomType);
@@ -351,50 +351,99 @@ const BookingSection = () => {
                       onValueChange={(value) => setRoomType(value as RoomType)}
                       className="space-y-3"
                     >
-                      <div
-                        className={cn(
-                          "flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer",
-                          roomType === "ac"
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-primary/50"
-                        )}
-                        onClick={() => setRoomType("ac")}
-                      >
-                        <RadioGroupItem value="ac" id="ac" />
-                        <Label htmlFor="ac" className="cursor-pointer flex-1">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <span className="font-semibold">AC Room</span>
-                              <p className="text-xs text-muted-foreground">
-                                Air-conditioned with double bed
-                              </p>
-                            </div>
-                            <span className="font-semibold text-primary">₹3,000/night</span>
+                      {/* AC Room Option */}
+                      {(() => {
+                        const acRoom = rooms.find((r) => r.room_type === "ac");
+                        const acPrice = getPriceByRoomType("ac");
+                        return (
+                          <div
+                            className={cn(
+                              "flex items-start space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer",
+                              roomType === "ac"
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover:border-primary/50"
+                            )}
+                            onClick={() => setRoomType("ac")}
+                          >
+                            <RadioGroupItem value="ac" id="ac" className="mt-1" />
+                            <Label htmlFor="ac" className="cursor-pointer flex-1">
+                              <div className="flex gap-3">
+                                {acRoom?.image_url ? (
+                                  <img
+                                    src={acRoom.image_url}
+                                    alt="AC Room"
+                                    className="w-20 h-16 object-cover rounded-md flex-shrink-0"
+                                  />
+                                ) : (
+                                  <div className="w-20 h-16 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
+                                    <span className="text-xs text-muted-foreground">AC</span>
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <span className="font-semibold">AC Room</span>
+                                      <p className="text-xs text-muted-foreground">
+                                        {acRoom?.description || "Air-conditioned with double bed"}
+                                      </p>
+                                    </div>
+                                    <span className="font-semibold text-primary whitespace-nowrap ml-2">
+                                      ₹{acPrice.toLocaleString()}/night
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </Label>
                           </div>
-                        </Label>
-                      </div>
-                      <div
-                        className={cn(
-                          "flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer",
-                          roomType === "non_ac"
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-primary/50"
-                        )}
-                        onClick={() => setRoomType("non_ac")}
-                      >
-                        <RadioGroupItem value="non_ac" id="non_ac" />
-                        <Label htmlFor="non_ac" className="cursor-pointer flex-1">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <span className="font-semibold">Non-AC Room</span>
-                              <p className="text-xs text-muted-foreground">
-                                Ventilated room with double bed
-                              </p>
-                            </div>
-                            <span className="font-semibold text-primary">₹2,000/night</span>
+                        );
+                      })()}
+                      
+                      {/* Non-AC Room Option */}
+                      {(() => {
+                        const nonAcRoom = rooms.find((r) => r.room_type === "non_ac");
+                        const nonAcPrice = getPriceByRoomType("non_ac");
+                        return (
+                          <div
+                            className={cn(
+                              "flex items-start space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer",
+                              roomType === "non_ac"
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover:border-primary/50"
+                            )}
+                            onClick={() => setRoomType("non_ac")}
+                          >
+                            <RadioGroupItem value="non_ac" id="non_ac" className="mt-1" />
+                            <Label htmlFor="non_ac" className="cursor-pointer flex-1">
+                              <div className="flex gap-3">
+                                {nonAcRoom?.image_url ? (
+                                  <img
+                                    src={nonAcRoom.image_url}
+                                    alt="Non-AC Room"
+                                    className="w-20 h-16 object-cover rounded-md flex-shrink-0"
+                                  />
+                                ) : (
+                                  <div className="w-20 h-16 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
+                                    <span className="text-xs text-muted-foreground">Non-AC</span>
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <span className="font-semibold">Non-AC Room</span>
+                                      <p className="text-xs text-muted-foreground">
+                                        {nonAcRoom?.description || "Ventilated room with double bed"}
+                                      </p>
+                                    </div>
+                                    <span className="font-semibold text-primary whitespace-nowrap ml-2">
+                                      ₹{nonAcPrice.toLocaleString()}/night
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </Label>
                           </div>
-                        </Label>
-                      </div>
+                        );
+                      })()}
                     </RadioGroup>
                   </div>
 

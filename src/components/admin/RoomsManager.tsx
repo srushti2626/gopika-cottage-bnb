@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,10 +37,22 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, RefreshCw } from "lucide-react";
+import { Plus, Pencil, RefreshCw, Upload, X, Image as ImageIcon } from "lucide-react";
 
-type Room = Database["public"]["Tables"]["rooms"]["Row"];
-type RoomType = Database["public"]["Enums"]["room_type"];
+type RoomType = "ac" | "non_ac";
+
+interface Room {
+  id: string;
+  name: string;
+  room_type: RoomType;
+  price_per_night: number;
+  max_guests: number;
+  description: string | null;
+  is_active: boolean;
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 interface RoomFormData {
   name: string;
@@ -68,6 +79,10 @@ export function RoomsManager() {
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const [formData, setFormData] = useState<RoomFormData>(initialFormData);
   const [saving, setSaving] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchRooms = async () => {
     setLoading(true);
@@ -79,7 +94,7 @@ export function RoomsManager() {
     if (error) {
       toast.error("Failed to fetch rooms");
     } else {
-      setRooms(data || []);
+      setRooms((data as Room[]) || []);
     }
     setLoading(false);
   };
@@ -91,6 +106,8 @@ export function RoomsManager() {
   const openCreateDialog = () => {
     setEditingRoom(null);
     setFormData(initialFormData);
+    setImageFile(null);
+    setImagePreview(null);
     setIsDialogOpen(true);
   };
 
@@ -104,7 +121,72 @@ export function RoomsManager() {
       description: room.description || "",
       is_active: room.is_active,
     });
+    setImageFile(null);
+    setImagePreview(room.image_url);
     setIsDialogOpen(true);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const uploadImage = async (roomId: string): Promise<string | null> => {
+    if (!imageFile) return editingRoom?.image_url || null;
+
+    setUploading(true);
+    try {
+      const fileExt = imageFile.name.split(".").pop();
+      const fileName = `${roomId}.${fileExt}`;
+      const filePath = `rooms/${fileName}`;
+
+      // Delete old image if exists
+      if (editingRoom?.image_url) {
+        const oldPath = editingRoom.image_url.split("/").slice(-2).join("/");
+        await supabase.storage.from("room-images").remove([oldPath]);
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from("room-images")
+        .upload(filePath, imageFile, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("room-images")
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload image");
+      return null;
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -116,6 +198,9 @@ export function RoomsManager() {
     setSaving(true);
 
     if (editingRoom) {
+      // Upload image first if changed
+      const imageUrl = await uploadImage(editingRoom.id);
+
       // Update existing room
       const { error } = await supabase
         .from("rooms")
@@ -126,6 +211,7 @@ export function RoomsManager() {
           max_guests: formData.max_guests,
           description: formData.description || null,
           is_active: formData.is_active,
+          image_url: imageUrl,
         })
         .eq("id", editingRoom.id);
 
@@ -137,23 +223,40 @@ export function RoomsManager() {
         fetchRooms();
       }
     } else {
-      // Create new room
-      const { error } = await supabase.from("rooms").insert({
-        name: formData.name,
-        room_type: formData.room_type,
-        price_per_night: formData.price_per_night,
-        max_guests: formData.max_guests,
-        description: formData.description || null,
-        is_active: formData.is_active,
-      });
+      // Create new room first to get ID
+      const { data: newRoom, error: createError } = await supabase
+        .from("rooms")
+        .insert({
+          name: formData.name,
+          room_type: formData.room_type,
+          price_per_night: formData.price_per_night,
+          max_guests: formData.max_guests,
+          description: formData.description || null,
+          is_active: formData.is_active,
+        })
+        .select()
+        .single();
 
-      if (error) {
+      if (createError || !newRoom) {
         toast.error("Failed to create room");
-      } else {
-        toast.success("Room created successfully");
-        setIsDialogOpen(false);
-        fetchRooms();
+        setSaving(false);
+        return;
       }
+
+      // Upload image if selected
+      if (imageFile) {
+        const imageUrl = await uploadImage(newRoom.id);
+        if (imageUrl) {
+          await supabase
+            .from("rooms")
+            .update({ image_url: imageUrl })
+            .eq("id", newRoom.id);
+        }
+      }
+
+      toast.success("Room created successfully");
+      setIsDialogOpen(false);
+      fetchRooms();
     }
 
     setSaving(false);
@@ -168,9 +271,7 @@ export function RoomsManager() {
     if (error) {
       toast.error("Failed to update room status");
     } else {
-      toast.success(
-        room.is_active ? "Room disabled" : "Room enabled"
-      );
+      toast.success(room.is_active ? "Room disabled" : "Room enabled");
       fetchRooms();
     }
   };
@@ -224,6 +325,7 @@ export function RoomsManager() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Image</TableHead>
                     <TableHead>Room Name</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Price/Night</TableHead>
@@ -235,6 +337,19 @@ export function RoomsManager() {
                 <TableBody>
                   {rooms.map((room) => (
                     <TableRow key={room.id}>
+                      <TableCell>
+                        {room.image_url ? (
+                          <img
+                            src={room.image_url}
+                            alt={room.name}
+                            className="w-16 h-12 object-cover rounded-md"
+                          />
+                        ) : (
+                          <div className="w-16 h-12 bg-muted rounded-md flex items-center justify-center">
+                            <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell className="font-medium">{room.name}</TableCell>
                       <TableCell>
                         <Badge variant="outline">
@@ -280,7 +395,7 @@ export function RoomsManager() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingRoom ? "Edit Room" : "Create New Room"}
@@ -293,6 +408,61 @@ export function RoomsManager() {
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
+            {/* Image Upload */}
+            <div className="grid gap-2">
+              <Label>Room Image</Label>
+              <div className="space-y-3">
+                {imagePreview ? (
+                  <div className="relative inline-block">
+                    <img
+                      src={imagePreview}
+                      alt="Room preview"
+                      className="w-full max-w-[200px] h-32 object-cover rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6"
+                      onClick={removeImage}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div
+                    className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      Click to upload room image
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Max 5MB, JPG/PNG/WebP
+                    </p>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+                {imagePreview && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    Change Image
+                  </Button>
+                )}
+              </div>
+            </div>
+
             <div className="grid gap-2">
               <Label htmlFor="name">Room Name</Label>
               <Input
@@ -388,12 +558,16 @@ export function RoomsManager() {
             <Button
               variant="outline"
               onClick={() => setIsDialogOpen(false)}
-              disabled={saving}
+              disabled={saving || uploading}
             >
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={saving}>
-              {saving ? "Saving..." : editingRoom ? "Update Room" : "Create Room"}
+            <Button onClick={handleSubmit} disabled={saving || uploading}>
+              {saving || uploading
+                ? "Saving..."
+                : editingRoom
+                ? "Update Room"
+                : "Create Room"}
             </Button>
           </DialogFooter>
         </DialogContent>

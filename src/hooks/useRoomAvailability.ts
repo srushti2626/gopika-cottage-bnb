@@ -12,6 +12,7 @@ interface Room {
   price_per_night: number;
   max_guests: number;
   description: string | null;
+  image_url: string | null;
 }
 
 interface BlockedDate {

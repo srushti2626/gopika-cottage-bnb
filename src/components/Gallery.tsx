@@ -1,36 +1,57 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-import cottageInterior from "@/assets/cottage-interior.jpg";
-import cottageBedroom from "@/assets/cottage-bedroom.jpg";
-import cottageOutdoor from "@/assets/cottage-outdoor.jpg";
-import heroImage from "@/assets/hero-cottage.jpg";
+import cottageExterior from "@/assets/cottage-exterior.jpg";
+import room1 from "@/assets/room1.jpg";
+import room2 from "@/assets/room2.jpg";
+import passage1 from "@/assets/passage1.jpg";
+import passage2 from "@/assets/passage2.jpg";
+import sittingArea from "@/assets/sitting-area.jpg";
+import sittingArea2 from "@/assets/sitting-area2.jpg";
 
 const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const images = [
     {
-      src: heroImage,
+      src: cottageExterior,
       alt: "Gopika Cottage exterior view",
       caption: "Our Beautiful Cottage",
       span: "md:col-span-2 md:row-span-2",
     },
     {
-      src: cottageBedroom,
-      alt: "Cozy bedroom with mountain view",
-      caption: "Master Bedroom",
+      src: room1,
+      alt: "Cozy bedroom with modern ceiling",
+      caption: "Comfortable Bedroom",
       span: "",
     },
     {
-      src: cottageInterior,
-      alt: "Living room with rustic decor",
-      caption: "Living Area",
+      src: room2,
+      alt: "Spacious room with wooden ceiling",
+      caption: "Spacious Room",
       span: "",
     },
     {
-      src: cottageOutdoor,
-      alt: "Outdoor deck with stunning views",
-      caption: "Private Deck",
+      src: passage2,
+      alt: "Lobby with traditional Warli art",
+      caption: "Welcome Lobby",
+      span: "md:col-span-2",
+    },
+    {
+      src: passage1,
+      alt: "Sunlit hallway with wooden flooring",
+      caption: "Bright Passage",
+      span: "",
+    },
+    {
+      src: sittingArea2,
+      alt: "Evening ambiance at outdoor seating",
+      caption: "Evening Vibes",
+      span: "",
+    },
+    {
+      src: sittingArea,
+      alt: "Beach side sitting area",
+      caption: "Beach Sitting Area",
       span: "md:col-span-2",
     },
   ];

@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Twitter, Youtube, Heart } from "lucide-react";
+import { Instagram, Youtube, Heart } from "lucide-react";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -21,10 +21,8 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Youtube, href: "#", label: "YouTube" },
+    { icon: Instagram, href: "https://www.instagram.com/reel/CqXSpZaPBau/?utm_source=ig_web_button_share_sheet", label: "Instagram" },
+    { icon: Youtube, href: "https://youtu.be/a1DeUBvv1CQ?si=r-InEJ30NT4yzD1_", label: "YouTube" },
   ];
 
   return (

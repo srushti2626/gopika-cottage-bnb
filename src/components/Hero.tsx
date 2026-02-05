@@ -80,7 +80,7 @@ const Hero = () => {
             </div>
             <div>
               <div className="text-3xl md:text-4xl font-heading font-semibold text-background">
-                5+
+                16+
               </div>
               <div className="text-sm text-background/70">Years of Service</div>
             </div>

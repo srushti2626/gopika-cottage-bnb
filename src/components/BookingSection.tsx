@@ -481,6 +481,12 @@ const BookingSection = () => {
                               (d) => d.toDateString() === date.toDateString()
                             )
                           }
+                          modifiers={{
+                            fullyBooked: unavailableDates,
+                          }}
+                          modifiersClassNames={{
+                            fullyBooked: "bg-destructive/20 text-destructive line-through",
+                          }}
                           initialFocus
                           className={cn("p-3 pointer-events-auto")}
                         />
@@ -517,6 +523,12 @@ const BookingSection = () => {
                               (d) => d.toDateString() === date.toDateString()
                             )
                           }
+                          modifiers={{
+                            fullyBooked: unavailableDates,
+                          }}
+                          modifiersClassNames={{
+                            fullyBooked: "bg-destructive/20 text-destructive line-through",
+                          }}
                           initialFocus
                           className={cn("p-3 pointer-events-auto")}
                         />

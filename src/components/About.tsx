@@ -1,17 +1,17 @@
-import { Heart, Mountain, TreePine, Sunrise } from "lucide-react";
+import { Heart, Waves, Palmtree, Sunrise } from "lucide-react";
 import aboutCottage from "@/assets/about-cottage.jpg";
 
 const About = () => {
   const highlights = [
     {
-      icon: Mountain,
-      title: "Mountain Views",
-      description: "Wake up to breathtaking panoramic mountain vistas",
+      icon: Waves,
+      title: "Beach Views",
+      description: "Wake up to stunning views of the pristine Kihim beach",
     },
     {
-      icon: TreePine,
-      title: "Nature Immersion",
-      description: "Surrounded by lush forests and pristine wilderness",
+      icon: Palmtree,
+      title: "Coastal Paradise",
+      description: "Surrounded by palm trees and refreshing sea breeze",
     },
     {
       icon: Sunrise,

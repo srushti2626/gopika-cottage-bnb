@@ -41,7 +41,7 @@ const About = () => {
             {/* Floating Card */}
             <div className="absolute -bottom-6 -right-6 md:bottom-8 md:-right-8 bg-card p-6 rounded-xl shadow-elevated max-w-[200px]">
               <div className="text-4xl font-heading font-semibold text-primary mb-1">
-                5+ Years
+                16+ Years
               </div>
               <div className="text-sm text-muted-foreground">
                 Creating memorable stays
@@ -60,9 +60,9 @@ const About = () => {
             </h2>
             <p className="subtitle mb-6">
               Gopika Cottage is more than just a place to stay — it's an experience 
-              of warmth, nature, and genuine hospitality. Nestled in the picturesque 
-              hills of Uttarakhand, our family-run cottage has been welcoming travelers 
-              from around the world since 2019.
+              of warmth, nature, and genuine hospitality. Located near the pristine 
+              beaches of Alibaug Kihim, our family-run cottage offers the best beach 
+              views and has been welcoming travelers from around the world since 2009.
             </p>
             <p className="text-muted-foreground mb-8">
               Whether you're seeking a romantic getaway, a family vacation, or a solo 

@@ -1,5 +1,5 @@
 import { Heart, Mountain, TreePine, Sunrise } from "lucide-react";
-import cottageInterior from "@/assets/cottage-interior.jpg";
+import aboutCottage from "@/assets/about-cottage.jpg";
 
 const About = () => {
   const highlights = [
@@ -33,8 +33,8 @@ const About = () => {
           <div className="relative animate-fade-in-up">
             <div className="relative rounded-2xl overflow-hidden shadow-elevated">
               <img
-                src={cottageInterior}
-                alt="Cozy interior of Gopika Cottage"
+                src={aboutCottage}
+                alt="Gopika Cottage entrance with traditional Warli art"
                 className="w-full h-[400px] md:h-[500px] object-cover"
               />
             </div>

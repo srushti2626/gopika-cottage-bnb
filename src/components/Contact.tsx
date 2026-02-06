@@ -22,8 +22,13 @@ const Contact = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // This would send the form data to a backend
-    toast.success("Message sent successfully! We'll get back to you soon.");
+    // Open email client with pre-filled message for reliable contact
+    const subject = encodeURIComponent(`Inquiry from ${formData.name}`);
+    const body = encodeURIComponent(
+      `Name: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\n\nMessage:\n${formData.message}`
+    );
+    window.location.href = `mailto:stay@gopikacottage.com?subject=${subject}&body=${body}`;
+    toast.info("Your email client will open. Please send the email to complete your inquiry.");
     setFormData({ name: "", email: "", phone: "", message: "" });
   };
 

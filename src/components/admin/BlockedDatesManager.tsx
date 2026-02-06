@@ -4,6 +4,7 @@ import { CalendarOff, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
+import { getSafeErrorMessage } from "@/lib/errorUtils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -109,7 +110,7 @@ export function BlockedDatesManager() {
     if (error) {
       toast({
         title: "Error",
-        description: `Failed to block dates: ${error.message}`,
+        description: getSafeErrorMessage(error, "blocked date"),
         variant: "destructive",
       });
     } else {
@@ -138,7 +139,7 @@ export function BlockedDatesManager() {
     if (error) {
       toast({
         title: "Error",
-        description: `Failed to unblock date: ${error.message}`,
+        description: getSafeErrorMessage(error, "blocked date"),
         variant: "destructive",
       });
     } else {

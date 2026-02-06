@@ -4,6 +4,7 @@ import { Check, X, Eye, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
+import { getSafeErrorMessage } from "@/lib/errorUtils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -81,7 +82,7 @@ export function BookingsTable({ bookings, onRefresh }: BookingsTableProps) {
     if (error) {
       toast({
         title: "Error",
-        description: `Failed to update booking: ${error.message}`,
+        description: getSafeErrorMessage(error, "booking"),
         variant: "destructive",
       });
     } else {
@@ -123,7 +124,7 @@ export function BookingsTable({ bookings, onRefresh }: BookingsTableProps) {
     if (error) {
       toast({
         title: "Error",
-        description: `Failed to update booking: ${error.message}`,
+        description: getSafeErrorMessage(error, "booking"),
         variant: "destructive",
       });
     } else {
@@ -146,7 +147,7 @@ export function BookingsTable({ bookings, onRefresh }: BookingsTableProps) {
     if (error) {
       toast({
         title: "Error",
-        description: `Failed to delete booking: ${error.message}`,
+        description: getSafeErrorMessage(error, "booking"),
         variant: "destructive",
       });
     } else {

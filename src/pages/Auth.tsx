@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getSafeAuthErrorMessage } from "@/lib/errorUtils";
 
 const authSchema = z.object({
   email: z.string().trim().email("Enter a valid email").max(255),
@@ -61,7 +62,7 @@ export default function Auth() {
         if (error) {
           toast({
             title: "Sign in failed",
-            description: error.message,
+            description: getSafeAuthErrorMessage(error),
             variant: "destructive",
           });
           return;
@@ -80,7 +81,7 @@ export default function Auth() {
         if (error) {
           toast({
             title: "Sign up failed",
-            description: error.message,
+            description: getSafeAuthErrorMessage(error),
             variant: "destructive",
           });
           return;

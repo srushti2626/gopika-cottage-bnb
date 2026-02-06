@@ -1,27 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import gopikaCottageLogo from "@/assets/gopika-cottage-logo.png";
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isAuthed, setIsAuthed] = useState(false);
-  useEffect(() => {
-    const {
-      data: {
-        subscription
-      }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthed(!!session);
-    });
-    supabase.auth.getSession().then(({
-      data
-    }) => {
-      setIsAuthed(!!data.session);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  const { user, isAdmin } = useAdminAuth();
   const navLinks = [{
     name: "Home",
     href: "#home"
@@ -69,17 +56,22 @@ const Navbar = () => {
               <a href="#booking">Book Now</a>
             </Button>
 
-            {/* Admin entrypoint (for staff/admin) */}
-            {isAuthed ? <>
+            {/* Admin entrypoint (only for verified admins) */}
+            {user && isAdmin && (
+              <>
                 <Button variant="outline" size="lg" asChild>
                   <Link to="/admin">Dashboard</Link>
                 </Button>
                 <Button variant="ghost" size="lg" onClick={() => supabase.auth.signOut()}>
                   Logout
                 </Button>
-              </> : <Button variant="outline" size="lg" asChild>
+              </>
+            )}
+            {!user && (
+              <Button variant="outline" size="lg" asChild>
                 <Link to="/auth">Admin Login</Link>
-              </Button>}
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -100,23 +92,27 @@ const Navbar = () => {
                 </Button>
 
                 <div className="mt-3 flex flex-col gap-2">
-                  {isAuthed ? <>
+                  {user && isAdmin ? (
+                    <>
                       <Button variant="outline" size="lg" className="w-full" asChild>
                         <Link to="/admin" onClick={() => setIsOpen(false)}>
                           Dashboard
                         </Link>
                       </Button>
                       <Button variant="ghost" size="lg" className="w-full" onClick={() => {
-                  supabase.auth.signOut();
-                  setIsOpen(false);
-                }}>
+                        supabase.auth.signOut();
+                        setIsOpen(false);
+                      }}>
                         Logout
                       </Button>
-                    </> : <Button variant="outline" size="lg" className="w-full" asChild>
+                    </>
+                  ) : !user ? (
+                    <Button variant="outline" size="lg" className="w-full" asChild>
                       <Link to="/auth" onClick={() => setIsOpen(false)}>
                         Admin Login
                       </Link>
-                    </Button>}
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             </div>

@@ -126,6 +126,42 @@ export type Database = {
           },
         ]
       }
+      gallery_photos: {
+        Row: {
+          alt_text: string
+          caption: string | null
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string
+          is_active: boolean
+          span_class: string | null
+          updated_at: string
+        }
+        Insert: {
+          alt_text: string
+          caption?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url: string
+          is_active?: boolean
+          span_class?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alt_text?: string
+          caption?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          span_class?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           booking_id: string
@@ -259,6 +295,45 @@ export type Database = {
           name?: string
           price_per_night?: number
           room_type?: Database["public"]["Enums"]["room_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          created_at: string
+          display_order: number
+          guest_location: string | null
+          guest_name: string
+          id: string
+          is_active: boolean
+          rating: number
+          review_date: string | null
+          review_text: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          guest_location?: string | null
+          guest_name: string
+          id?: string
+          is_active?: boolean
+          rating?: number
+          review_date?: string | null
+          review_text: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          guest_location?: string | null
+          guest_name?: string
+          id?: string
+          is_active?: boolean
+          rating?: number
+          review_date?: string | null
+          review_text?: string
           updated_at?: string
         }
         Relationships: []

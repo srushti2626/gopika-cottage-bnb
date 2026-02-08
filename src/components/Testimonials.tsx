@@ -1,36 +1,71 @@
+import { useState, useEffect } from "react";
 import { Star, Quote } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface TestimonialData {
+  name: string;
+  location: string;
+  rating: number;
+  text: string;
+  date: string;
+}
+
+const defaultTestimonials: TestimonialData[] = [
+  {
+    name: "Priya Sharma",
+    location: "Delhi, India",
+    rating: 5,
+    text: "An absolutely magical experience! The cottage is even more beautiful than the pictures. Waking up to the mountain views was surreal. The hosts were incredibly warm and made us feel at home.",
+    date: "December 2024",
+  },
+  {
+    name: "Michael Chen",
+    location: "Singapore",
+    rating: 5,
+    text: "Perfect getaway from the city chaos. The cottage is spotlessly clean, well-maintained, and has all modern amenities. The bonfire evening was the highlight of our trip!",
+    date: "November 2024",
+  },
+  {
+    name: "Anjali & Rahul Kapoor",
+    location: "Mumbai, India",
+    rating: 5,
+    text: "We celebrated our anniversary here and it couldn't have been more perfect. The peaceful surroundings, delicious home-cooked meals, and warm hospitality made it truly special.",
+    date: "October 2024",
+  },
+  {
+    name: "David Thompson",
+    location: "London, UK",
+    rating: 5,
+    text: "Having traveled extensively in India, Gopika Cottage stands out for its authenticity and attention to detail. A genuine hidden gem that I'll definitely return to.",
+    date: "September 2024",
+  },
+];
 
 const Testimonials = () => {
-  const testimonials = [
-    {
-      name: "Priya Sharma",
-      location: "Delhi, India",
-      rating: 5,
-      text: "An absolutely magical experience! The cottage is even more beautiful than the pictures. Waking up to the mountain views was surreal. The hosts were incredibly warm and made us feel at home.",
-      date: "December 2024",
-    },
-    {
-      name: "Michael Chen",
-      location: "Singapore",
-      rating: 5,
-      text: "Perfect getaway from the city chaos. The cottage is spotlessly clean, well-maintained, and has all modern amenities. The bonfire evening was the highlight of our trip!",
-      date: "November 2024",
-    },
-    {
-      name: "Anjali & Rahul Kapoor",
-      location: "Mumbai, India",
-      rating: 5,
-      text: "We celebrated our anniversary here and it couldn't have been more perfect. The peaceful surroundings, delicious home-cooked meals, and warm hospitality made it truly special.",
-      date: "October 2024",
-    },
-    {
-      name: "David Thompson",
-      location: "London, UK",
-      rating: 5,
-      text: "Having traveled extensively in India, Gopika Cottage stands out for its authenticity and attention to detail. A genuine hidden gem that I'll definitely return to.",
-      date: "September 2024",
-    },
-  ];
+  const [testimonials, setTestimonials] = useState<TestimonialData[]>(defaultTestimonials);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      const { data, error } = await supabase
+        .from("testimonials")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        const dbTestimonials: TestimonialData[] = data.map((t) => ({
+          name: t.guest_name,
+          location: t.guest_location || "",
+          rating: t.rating,
+          text: t.review_text,
+          date: t.review_date || "",
+        }));
+        setTestimonials(dbTestimonials);
+      }
+    };
+
+    fetchTestimonials();
+  }, []);
 
   return (
     <section id="reviews" className="section-padding bg-secondary/30">
@@ -86,7 +121,9 @@ const Testimonials = () => {
                     {testimonial.name}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {testimonial.location} • {testimonial.date}
+                    {testimonial.location}
+                    {testimonial.location && testimonial.date && " • "}
+                    {testimonial.date}
                   </div>
                 </div>
               </div>

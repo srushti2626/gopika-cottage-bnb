@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, CalendarDays, LayoutDashboard, RefreshCw, BedDouble } from "lucide-react";
+import { ArrowLeft, CalendarDays, LayoutDashboard, RefreshCw, BedDouble, Image, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Database } from "@/integrations/supabase/types";
@@ -17,6 +17,8 @@ import {
 import { BookingsTable } from "@/components/admin/BookingsTable";
 import { BlockedDatesManager } from "@/components/admin/BlockedDatesManager";
 import { RoomsManager } from "@/components/admin/RoomsManager";
+import { GalleryManager } from "@/components/admin/GalleryManager";
+import { TestimonialsManager } from "@/components/admin/TestimonialsManager";
 
 type Booking = Database["public"]["Tables"]["bookings"]["Row"];
 type BookingStatus = Database["public"]["Enums"]["booking_status"];
@@ -123,7 +125,7 @@ export default function Admin() {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="bookings" className="space-y-6">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="bookings" className="gap-2">
               <LayoutDashboard className="h-4 w-4" />
               Bookings
@@ -135,6 +137,14 @@ export default function Admin() {
             <TabsTrigger value="rooms" className="gap-2">
               <BedDouble className="h-4 w-4" />
               Rooms
+            </TabsTrigger>
+            <TabsTrigger value="gallery" className="gap-2">
+              <Image className="h-4 w-4" />
+              Gallery
+            </TabsTrigger>
+            <TabsTrigger value="reviews" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Reviews
             </TabsTrigger>
           </TabsList>
 
@@ -232,6 +242,22 @@ export default function Admin() {
 
           <TabsContent value="rooms">
             <RoomsManager />
+          </TabsContent>
+
+          <TabsContent value="gallery">
+            <Card>
+              <CardContent className="pt-6">
+                <GalleryManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="reviews">
+            <Card>
+              <CardContent className="pt-6">
+                <TestimonialsManager />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </main>

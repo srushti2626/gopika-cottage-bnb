@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import cottageExterior from "@/assets/cottage-exterior.jpg";
 import room1 from "@/assets/room1.jpg";
 import room2 from "@/assets/room2.jpg";
@@ -8,53 +9,83 @@ import passage2 from "@/assets/passage2.jpg";
 import sittingArea from "@/assets/sitting-area.jpg";
 import sittingArea2 from "@/assets/sitting-area2.jpg";
 
+interface GalleryImage {
+  src: string;
+  alt: string;
+  caption: string;
+  span: string;
+}
+
+const defaultImages: GalleryImage[] = [
+  {
+    src: cottageExterior,
+    alt: "Gopika Cottage exterior view",
+    caption: "Our Beautiful Cottage",
+    span: "md:col-span-2 md:row-span-2",
+  },
+  {
+    src: room1,
+    alt: "Cozy bedroom with modern ceiling",
+    caption: "Comfortable Bedroom",
+    span: "",
+  },
+  {
+    src: room2,
+    alt: "Spacious room with wooden ceiling",
+    caption: "Spacious Room",
+    span: "",
+  },
+  {
+    src: passage2,
+    alt: "Lobby with traditional Warli art",
+    caption: "Welcome Lobby",
+    span: "md:col-span-2",
+  },
+  {
+    src: passage1,
+    alt: "Sunlit hallway with wooden flooring",
+    caption: "Bright Passage",
+    span: "",
+  },
+  {
+    src: sittingArea2,
+    alt: "Evening ambiance at outdoor seating",
+    caption: "Evening Vibes",
+    span: "",
+  },
+  {
+    src: sittingArea,
+    alt: "Beach side sitting area",
+    caption: "Beach Sitting Area",
+    span: "md:col-span-2",
+  },
+];
+
 const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [images, setImages] = useState<GalleryImage[]>(defaultImages);
 
-  const images = [
-    {
-      src: cottageExterior,
-      alt: "Gopika Cottage exterior view",
-      caption: "Our Beautiful Cottage",
-      span: "md:col-span-2 md:row-span-2",
-    },
-    {
-      src: room1,
-      alt: "Cozy bedroom with modern ceiling",
-      caption: "Comfortable Bedroom",
-      span: "",
-    },
-    {
-      src: room2,
-      alt: "Spacious room with wooden ceiling",
-      caption: "Spacious Room",
-      span: "",
-    },
-    {
-      src: passage2,
-      alt: "Lobby with traditional Warli art",
-      caption: "Welcome Lobby",
-      span: "md:col-span-2",
-    },
-    {
-      src: passage1,
-      alt: "Sunlit hallway with wooden flooring",
-      caption: "Bright Passage",
-      span: "",
-    },
-    {
-      src: sittingArea2,
-      alt: "Evening ambiance at outdoor seating",
-      caption: "Evening Vibes",
-      span: "",
-    },
-    {
-      src: sittingArea,
-      alt: "Beach side sitting area",
-      caption: "Beach Sitting Area",
-      span: "md:col-span-2",
-    },
-  ];
+  useEffect(() => {
+    const fetchGalleryPhotos = async () => {
+      const { data, error } = await supabase
+        .from("gallery_photos")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        const dbImages: GalleryImage[] = data.map((photo) => ({
+          src: photo.image_url,
+          alt: photo.alt_text,
+          caption: photo.caption || photo.alt_text,
+          span: photo.span_class || "",
+        }));
+        setImages(dbImages);
+      }
+    };
+
+    fetchGalleryPhotos();
+  }, []);
 
   return (
     <section id="gallery" className="section-padding bg-secondary/30">

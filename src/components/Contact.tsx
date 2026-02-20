@@ -174,7 +174,7 @@ const Contact = () => {
             </div>
 
             {/* Map - Gopika Cottage, Kihim, Alibaug location */}
-            <div className="rounded-xl overflow-hidden shadow-soft h-[300px]">
+            <div className="rounded-xl overflow-hidden shadow-soft h-[300px] relative">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3774.5!2d72.8783!3d18.7289!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be87c95e4c9d7c1%3A0x1234567890abcdef!2sNear%20Chamunda%20Devi%20Temple%2C%20Kihim%2C%20Alibaug!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
                 width="100%"
@@ -185,6 +185,15 @@ const Contact = () => {
                 referrerPolicy="no-referrer-when-downgrade"
                 title="Gopika Cottage Location - Near Chamunda Devi Temple, Kihim, Alibaug"
               />
+              <a
+                href="https://maps.app.goo.gl/9cxKaPbhUANCcVMn8"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-sm text-foreground text-sm font-medium px-4 py-2 rounded-lg shadow-md hover:bg-background transition-colors flex items-center gap-2"
+              >
+                <MapPin className="w-4 h-4 text-primary" />
+                View Larger Map
+              </a>
             </div>
           </div>
         </div>

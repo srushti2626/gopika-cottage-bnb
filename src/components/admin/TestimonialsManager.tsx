@@ -191,7 +191,7 @@ export function TestimonialsManager() {
                 <Input
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="John Doe"
+                  placeholder="Name"
                   required
                 />
               </div>

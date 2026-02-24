@@ -29,11 +29,11 @@ export default function Auth() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) navigate("/");
+      if (session) navigate("/admin");
     });
 
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate("/");
+      if (data.session) navigate("/admin");
     });
 
     return () => subscription.unsubscribe();
@@ -70,7 +70,7 @@ export default function Auth() {
         }
 
         toast({ title: "Signed in" });
-        navigate("/");
+        navigate("/admin");
       } else {
         const redirectUrl = `${window.location.origin}/`;
         const { error } = await supabase.auth.signUp({

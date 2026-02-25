@@ -103,11 +103,7 @@ export default function Auth() {
           return;
         }
 
-        toast({
-          title: "Account created",
-          description: "Please check your email to verify your account, then sign in.",
-        });
-        setMode("login");
+        toast({ title: "Account created! Signing you in…" });
       }
     } finally {
       setSubmitting(false);

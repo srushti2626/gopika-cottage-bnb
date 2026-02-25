@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, LogIn } from "lucide-react";
 import gopikaCottageLogo from "@/assets/gopika-cottage-logo.png";
 
 const Navbar = () => {
@@ -28,6 +29,7 @@ const Navbar = () => {
     name: "Contact",
     href: "#contact"
   }];
+
   return <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
       <div className="container-cottage">
         <div className="flex items-center justify-between h-16 md:h-20">
@@ -52,7 +54,12 @@ const Navbar = () => {
             <Button variant="hero" size="lg" asChild>
               <a href="#booking">Book Now</a>
             </Button>
-
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/auth" className="flex items-center gap-1.5">
+                <LogIn className="w-4 h-4" />
+                Login / Sign Up
+              </Link>
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -67,11 +74,16 @@ const Navbar = () => {
               {navLinks.map(link => <a key={link.name} href={link.href} onClick={() => setIsOpen(false)} className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2">
                   {link.name}
                 </a>)}
-              <div className="pt-4 border-t border-border/50">
+              <div className="pt-4 border-t border-border/50 flex flex-col gap-2">
                 <Button variant="hero" size="lg" className="w-full" asChild>
                   <a href="#booking">Book Now</a>
                 </Button>
-
+                <Button variant="outline" size="lg" className="w-full" asChild>
+                  <Link to="/auth" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-1.5">
+                    <LogIn className="w-4 h-4" />
+                    Login / Sign Up
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>}

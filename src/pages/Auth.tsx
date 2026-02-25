@@ -15,6 +15,14 @@ const authSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters").max(72),
 });
 
+async function getRedirectPath(userId: string): Promise<string> {
+  const { data } = await supabase.rpc("has_role", {
+    _user_id: userId,
+    _role: "admin",
+  });
+  return data ? "/admin" : "/";
+}
+
 export default function Auth() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -28,12 +36,18 @@ export default function Auth() {
   );
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) navigate("/admin");
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session) {
+        const path = await getRedirectPath(session.user.id);
+        navigate(path);
+      }
     });
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate("/admin");
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session) {
+        const path = await getRedirectPath(data.session.user.id);
+        navigate(path);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -55,7 +69,7 @@ export default function Auth() {
     try {
       setSubmitting(true);
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: signInData, error } = await supabase.auth.signInWithPassword({
           email: parsed.data.email,
           password: parsed.data.password,
         });
@@ -70,7 +84,8 @@ export default function Auth() {
         }
 
         toast({ title: "Signed in" });
-        navigate("/admin");
+        const path = await getRedirectPath(signInData.user.id);
+        navigate(path);
       } else {
         const redirectUrl = `${window.location.origin}/`;
         const { error } = await supabase.auth.signUp({
@@ -90,7 +105,7 @@ export default function Auth() {
 
         toast({
           title: "Account created",
-          description: "You can now sign in.",
+          description: "Please check your email to verify your account, then sign in.",
         });
         setMode("login");
       }
@@ -113,7 +128,7 @@ export default function Auth() {
               {title}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              This login is intended for staff/admin access.
+              Sign in to your account or create a new one.
             </p>
           </div>
 

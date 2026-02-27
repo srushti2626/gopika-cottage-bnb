@@ -14,13 +14,7 @@ const authSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters").max(72),
 });
 
-async function getRedirectPath(userId: string): Promise<string> {
-  const { data } = await supabase.rpc("has_role", {
-    _user_id: userId,
-    _role: "admin",
-  });
-  return data ? "/admin" : "/";
-}
+const GUEST_REDIRECT = "/dashboard";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -42,15 +36,13 @@ export default function Auth() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
-        const path = await getRedirectPath(session.user.id);
-        navigate(path);
+        navigate(GUEST_REDIRECT);
       }
     });
 
     supabase.auth.getSession().then(async ({ data }) => {
       if (data.session) {
-        const path = await getRedirectPath(data.session.user.id);
-        navigate(path);
+        navigate(GUEST_REDIRECT);
       }
     });
 
@@ -101,8 +93,7 @@ export default function Auth() {
           return;
         }
         toast({ title: "Signed in" });
-        const path = await getRedirectPath(signInData.user.id);
-        navigate(path);
+        navigate(GUEST_REDIRECT);
       } else {
         const redirectUrl = `${window.location.origin}/`;
         const { error } = await supabase.auth.signUp({
@@ -202,6 +193,11 @@ export default function Auth() {
                 Back to sign in
               </button>
             )}
+            <div className="pt-2 border-t border-border/50 mt-2">
+              <Link to="/admin-login" className="underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors">
+                Admin login →
+              </Link>
+            </div>
           </div>
         </div>
       </div>

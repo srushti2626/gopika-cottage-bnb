@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -15,6 +16,7 @@ import {
   Loader2,
   Baby,
   User,
+  LogIn,
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -36,6 +38,9 @@ const bookingSchema = z.object({
 });
 
 const BookingSection = () => {
+  const navigate = useNavigate();
+  const [session, setSession] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [roomType, setRoomType] = useState<RoomType>("ac");
@@ -50,6 +55,27 @@ const BookingSection = () => {
 
   const { loading, checkAvailability, getPriceByRoomType, getUnavailableDatesForRoomType, rooms } =
     useRoomAvailability();
+
+  // Check auth state
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      if (data.session) {
+        setEmail(data.session.user.email ?? "");
+      }
+      setAuthLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+      setSession(sess);
+      if (sess) {
+        setEmail(sess.user.email ?? "");
+      }
+      setAuthLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const availability = checkAvailability(checkIn, checkOut, roomType);
   const pricePerNight = getPriceByRoomType(roomType);
@@ -88,30 +114,24 @@ const BookingSection = () => {
   };
 
   const handleBooking = async () => {
+    if (!session) {
+      toast({ title: "Please sign in", description: "You need an account to book a stay.", variant: "destructive" });
+      navigate("/auth");
+      return;
+    }
+
     if (!checkIn || !checkOut) {
-      toast({
-        title: "Missing Dates",
-        description: "Please select check-in and check-out dates",
-        variant: "destructive",
-      });
+      toast({ title: "Missing Dates", description: "Please select check-in and check-out dates", variant: "destructive" });
       return;
     }
 
     if (!availability.available) {
-      toast({
-        title: "Not Available",
-        description: availability.message,
-        variant: "destructive",
-      });
+      toast({ title: "Not Available", description: availability.message, variant: "destructive" });
       return;
     }
 
     if (!validateForm()) {
-      toast({
-        title: "Validation Error",
-        description: "Please fix the errors in the form",
-        variant: "destructive",
-      });
+      toast({ title: "Validation Error", description: "Please fix the errors in the form", variant: "destructive" });
       return;
     }
 
@@ -132,17 +152,13 @@ const BookingSection = () => {
       });
 
       if (error) {
-        toast({
-          title: "Booking Failed",
-          description: error.message || "Please try again in a moment.",
-          variant: "destructive",
-        });
+        toast({ title: "Booking Failed", description: error.message || "Please try again in a moment.", variant: "destructive" });
         return;
       }
 
       toast({
         title: "Booking Request Submitted!",
-        description: `Booking ID: ${data?.bookingId ?? "(pending)"}. Total: ₹${total.toLocaleString()}`,
+        description: `Booking ID: ${data?.bookingId ?? "(pending)"}. Total: ₹${total.toLocaleString()}. View it in your dashboard.`,
       });
 
       // Reset form (keep roomType)
@@ -150,17 +166,13 @@ const BookingSection = () => {
       setCheckOut(undefined);
       setFullName("");
       setMobileNumber("");
-      setEmail("");
+      setEmail(session?.user?.email ?? "");
       setAdults(2);
       setChildren(0);
       setSpecialRequests("");
       setErrors({});
     } catch (e) {
-      toast({
-        title: "Booking Failed",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Booking Failed", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -174,6 +186,49 @@ const BookingSection = () => {
     /^[6-9]\d{9}$/.test(mobileNumber) &&
     email.includes("@") &&
     adults >= 1;
+
+  // Auth gate: show login prompt if not authenticated
+  if (!authLoading && !session) {
+    return (
+      <section id="booking" className="section-padding bg-background">
+        <div className="container-cottage">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent font-medium text-sm uppercase tracking-wider">
+              Book Your Stay
+            </span>
+            <h2 className="heading-section text-foreground mt-2 mb-4">
+              Reserve Your <span className="text-primary">Escape</span>
+            </h2>
+            <p className="subtitle">
+              Create an account or sign in to book your perfect getaway.
+            </p>
+          </div>
+
+          <div className="max-w-md mx-auto">
+            <div className="card-cottage p-8 text-center space-y-6">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <LogIn className="w-8 h-8 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-xl font-heading font-semibold text-foreground mb-2">
+                  Sign in to Book
+                </h3>
+                <p className="text-muted-foreground text-sm">
+                  Create a free account to make reservations, track your bookings, and download invoices from your personal dashboard.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <Button variant="hero" size="lg" onClick={() => navigate("/auth")}>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In / Create Account
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="booking" className="section-padding bg-background">
@@ -195,7 +250,7 @@ const BookingSection = () => {
         {/* Booking Card */}
         <div className="max-w-5xl mx-auto">
           <div className="card-cottage p-6 lg:p-10">
-            {loading ? (
+            {loading || authLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 <span className="ml-2 text-muted-foreground">Loading availability...</span>
@@ -267,51 +322,23 @@ const BookingSection = () => {
                         Adults <span className="text-destructive">*</span>
                       </Label>
                       <div className="flex items-center gap-2 mt-1.5">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-9 w-9"
-                          onClick={() => setAdults(Math.max(1, adults - 1))}
-                        >
-                          -
-                        </Button>
+                        <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setAdults(Math.max(1, adults - 1))}>-</Button>
                         <div className="flex items-center justify-center gap-1 min-w-[60px]">
                           <User className="w-4 h-4 text-muted-foreground" />
                           <span className="font-semibold">{adults}</span>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-9 w-9"
-                          onClick={() => setAdults(Math.min(8, adults + 1))}
-                        >
-                          +
-                        </Button>
+                        <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setAdults(Math.min(8, adults + 1))}>+</Button>
                       </div>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Children</Label>
                       <div className="flex items-center gap-2 mt-1.5">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-9 w-9"
-                          onClick={() => setChildren(Math.max(0, children - 1))}
-                        >
-                          -
-                        </Button>
+                        <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setChildren(Math.max(0, children - 1))}>-</Button>
                         <div className="flex items-center justify-center gap-1 min-w-[60px]">
                           <Baby className="w-4 h-4 text-muted-foreground" />
                           <span className="font-semibold">{children}</span>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-9 w-9"
-                          onClick={() => setChildren(Math.min(8, children + 1))}
-                        >
-                          +
-                        </Button>
+                        <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setChildren(Math.min(8, children + 1))}>+</Button>
                       </div>
                     </div>
                   </div>
@@ -369,11 +396,7 @@ const BookingSection = () => {
                             <Label htmlFor="ac" className="cursor-pointer flex-1">
                               <div className="flex gap-3">
                                 {acRoom?.image_url ? (
-                                  <img
-                                    src={acRoom.image_url}
-                                    alt="AC Room"
-                                    className="w-20 h-16 object-cover rounded-md flex-shrink-0"
-                                  />
+                                  <img src={acRoom.image_url} alt="AC Room" className="w-20 h-16 object-cover rounded-md flex-shrink-0" />
                                 ) : (
                                   <div className="w-20 h-16 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
                                     <span className="text-xs text-muted-foreground">AC</span>
@@ -416,11 +439,7 @@ const BookingSection = () => {
                             <Label htmlFor="non_ac" className="cursor-pointer flex-1">
                               <div className="flex gap-3">
                                 {nonAcRoom?.image_url ? (
-                                  <img
-                                    src={nonAcRoom.image_url}
-                                    alt="Non-AC Room"
-                                    className="w-20 h-16 object-cover rounded-md flex-shrink-0"
-                                  />
+                                  <img src={nonAcRoom.image_url} alt="Non-AC Room" className="w-20 h-16 object-cover rounded-md flex-shrink-0" />
                                 ) : (
                                   <div className="w-20 h-16 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
                                     <span className="text-xs text-muted-foreground">Non-AC</span>
@@ -481,12 +500,8 @@ const BookingSection = () => {
                               (d) => d.toDateString() === date.toDateString()
                             )
                           }
-                          modifiers={{
-                            fullyBooked: unavailableDates,
-                          }}
-                          modifiersClassNames={{
-                            fullyBooked: "bg-destructive/20 text-destructive line-through",
-                          }}
+                          modifiers={{ fullyBooked: unavailableDates }}
+                          modifiersClassNames={{ fullyBooked: "bg-destructive/20 text-destructive line-through" }}
                           initialFocus
                           className={cn("p-3 pointer-events-auto")}
                         />
@@ -523,12 +538,8 @@ const BookingSection = () => {
                               (d) => d.toDateString() === date.toDateString()
                             )
                           }
-                          modifiers={{
-                            fullyBooked: unavailableDates,
-                          }}
-                          modifiersClassNames={{
-                            fullyBooked: "bg-destructive/20 text-destructive line-through",
-                          }}
+                          modifiers={{ fullyBooked: unavailableDates }}
+                          modifiersClassNames={{ fullyBooked: "bg-destructive/20 text-destructive line-through" }}
                           initialFocus
                           className={cn("p-3 pointer-events-auto")}
                         />

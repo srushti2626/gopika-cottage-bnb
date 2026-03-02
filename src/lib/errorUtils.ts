@@ -75,10 +75,18 @@ export function getSafeAuthErrorMessage(error: ErrorWithCode | unknown): string 
     'Email not confirmed',
     'User already registered',
     'Password should be at least',
+    'weak_password',
+    'weak password',
+    'known to be weak',
     'rate limit',
     'session',
     'token',
   ];
+
+  const code = (err as any)?.code || '';
+  if (code === 'weak_password') {
+    return 'This password is too common and easy to guess. Please choose a stronger password.';
+  }
 
   if (safeAuthErrors.some(safe => message.toLowerCase().includes(safe.toLowerCase()))) {
     return message;

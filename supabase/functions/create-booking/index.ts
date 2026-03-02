@@ -1,4 +1,4 @@
-// Lovable Cloud backend function: create-booking
+// Backend function: create-booking
 // Authenticated booking creation with server-side validation and availability check.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.5";

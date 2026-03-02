@@ -584,7 +584,7 @@ const BookingSection = () => {
                 </div>
 
                 {/* Price Summary */}
-                <div className="bg-secondary/50 rounded-xl p-6 h-fit">
+                <div className="bg-secondary/50 rounded-xl p-6 h-fit lg:sticky lg:top-4">
                   <h3 className="text-xl font-semibold text-foreground mb-6">
                     Price Summary
                   </h3>

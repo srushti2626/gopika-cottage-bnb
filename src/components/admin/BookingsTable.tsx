@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Check, X, Eye, Pencil, Trash2 } from "lucide-react";
+import { Check, X, Eye, Pencil, Trash2, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
@@ -36,6 +36,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { generateBookingPdf } from "@/lib/generateBookingPdf";
 
 type Booking = Database["public"]["Tables"]["bookings"]["Row"];
 type BookingStatus = Database["public"]["Enums"]["booking_status"];
@@ -244,6 +245,16 @@ export function BookingsTable({ bookings, onRefresh }: BookingsTableProps) {
                         disabled={updating}
                       >
                         <X className="h-4 w-4 text-red-600" />
+                      </Button>
+                    )}
+                    {(booking.status === "confirmed" || booking.status === "completed") && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Download Invoice PDF"
+                        onClick={() => generateBookingPdf(booking)}
+                      >
+                        <Download className="h-4 w-4 text-primary" />
                       </Button>
                     )}
                     <Button

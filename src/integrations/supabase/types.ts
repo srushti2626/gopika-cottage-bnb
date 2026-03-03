@@ -301,6 +301,7 @@ export type Database = {
       }
       testimonials: {
         Row: {
+          booking_id: string | null
           created_at: string
           display_order: number
           guest_location: string | null
@@ -311,8 +312,10 @@ export type Database = {
           review_date: string | null
           review_text: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
+          booking_id?: string | null
           created_at?: string
           display_order?: number
           guest_location?: string | null
@@ -323,8 +326,10 @@ export type Database = {
           review_date?: string | null
           review_text: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
+          booking_id?: string | null
           created_at?: string
           display_order?: number
           guest_location?: string | null
@@ -335,8 +340,17 @@ export type Database = {
           review_date?: string | null
           review_text?: string
           updated_at?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "testimonials_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

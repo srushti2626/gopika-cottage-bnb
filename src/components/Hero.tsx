@@ -10,8 +10,8 @@ const Hero = () => {
         <img
           src={heroImage}
           alt="Gopika Cottage - A beautiful mountain retreat"
-          className="w-full h-full object-cover"
-        />
+          className="w-full h-full object-cover" />
+        
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 via-foreground/40 to-transparent" />
       </div>
 
@@ -28,7 +28,7 @@ const Hero = () => {
 
           {/* Heading */}
           <h1 className="heading-display text-background mb-6 animate-fade-in-up whitespace-nowrap text-center">
-            Your Perfect <span className="text-accent">Beach Escape</span> Awaits
+            Your Perfect <span className="text-accent text-[#e8f1f2]">Beach Escape</span> Awaits
           </h1>
 
           {/* Subtitle */}
@@ -52,12 +52,12 @@ const Hero = () => {
                 Check Availability
               </a>
             </Button>
-            <Button 
-              variant="outline" 
-              size="xl" 
+            <Button
+              variant="outline"
+              size="xl"
               className="bg-background/10 backdrop-blur-sm border-background/30 text-background hover:bg-background/20 hover:text-background"
-              asChild
-            >
+              asChild>
+              
               <a href="#gallery">Explore Cottage</a>
             </Button>
           </div>
@@ -92,8 +92,8 @@ const Hero = () => {
           <div className="w-1.5 h-3 bg-background/80 rounded-full animate-pulse-soft" />
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 };
 
 export default Hero;

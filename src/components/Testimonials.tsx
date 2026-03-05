@@ -12,7 +12,7 @@ interface TestimonialData {
 
 const defaultTestimonials: TestimonialData[] = [
   {
-    name: "Priya Sharma",
+    name: "Kalpesh Matole",
     location: "Delhi, India",
     rating: 5,
     text: "An absolutely magical experience! The cottage is even more beautiful than the pictures. Waking up to the mountain views was surreal. The hosts were incredibly warm and made us feel at home.",

@@ -11,6 +11,7 @@ export function generateBookingPdf(booking: Booking) {
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Invoice - ${booking.booking_id}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }

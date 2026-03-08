@@ -317,6 +317,11 @@ export default function UserDashboard() {
                         <p className="text-sm text-muted-foreground capitalize">
                           Room: {booking.room_type === "ac" ? "AC" : "Non-AC"} · {booking.adults} adults, {booking.children} children
                         </p>
+                        {bookingAddons[booking.id]?.length > 0 && (
+                          <p className="text-xs text-primary mt-0.5">
+                            + {bookingAddons[booking.id].map((a) => a.addon_services?.name || "Add-on").join(", ")}
+                          </p>
+                        )}
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <p className="font-semibold text-foreground">₹{booking.total_amount.toLocaleString("en-IN")}</p>

@@ -37,7 +37,7 @@ const FoodMenu = () => {
   ];
 
   return (
-    <section id="food-menu" className="section-padding bg-muted/30">
+    <section id="additional-services" className="section-padding bg-muted/30">
       <div className="container-cottage">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">

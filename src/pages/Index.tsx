@@ -24,6 +24,7 @@ const Index = () => {
         <Gallery />
         <Pricing />
         
+        <FoodMenu />
         <CottageRules />
         <Testimonials />
         <BookingSection />

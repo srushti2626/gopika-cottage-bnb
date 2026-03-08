@@ -135,6 +135,15 @@ function generateInvoicePdf(booking: Tables<"bookings">, invoice: Tables<"invoic
   }
 }
 
+interface BookingAddon {
+  id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  addon_service_id: string;
+  addon_services?: { name: string; price_type: string } | null;
+}
+
 interface ReviewForm {
   bookingId: string;
   rating: number;
@@ -148,6 +157,7 @@ export default function UserDashboard() {
   const [bookings, setBookings] = useState<Tables<"bookings">[]>([]);
   const [invoices, setInvoices] = useState<Tables<"invoices">[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [bookingAddons, setBookingAddons] = useState<Record<string, BookingAddon[]>>({});
   const [loading, setLoading] = useState(true);
   const [reviewForm, setReviewForm] = useState<ReviewForm | null>(null);
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -172,6 +182,25 @@ export default function UserDashboard() {
     setBookings(bookingsRes.data ?? []);
     setInvoices(invoicesRes.data ?? []);
     setReviews(reviewsRes.data ?? []);
+
+    // Fetch add-ons for all bookings
+    if (bookingsRes.data && bookingsRes.data.length > 0) {
+      const bookingIds = bookingsRes.data.map((b) => b.id);
+      const { data: addonsData } = await supabase
+        .from("booking_addons")
+        .select("*, addon_services(name, price_type)")
+        .in("booking_id", bookingIds);
+
+      if (addonsData) {
+        const grouped: Record<string, BookingAddon[]> = {};
+        (addonsData as BookingAddon[]).forEach((a: any) => {
+          if (!grouped[a.booking_id]) grouped[a.booking_id] = [];
+          grouped[a.booking_id].push(a);
+        });
+        setBookingAddons(grouped);
+      }
+    }
+
     setLoading(false);
   }, []);
 

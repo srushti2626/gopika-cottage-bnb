@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, CalendarDays, Download, Home, Star, MessageSquare, Send, CreditCard } from "lucide-react";
+import { LogOut, User, CalendarDays, Download, Home, Star, MessageSquare, Send, CreditCard, XCircle } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -169,6 +169,8 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [reviewForm, setReviewForm] = useState<ReviewForm | null>(null);
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [cancelBookingId, setCancelBookingId] = useState<string | null>(null);
+  const [requestingCancel, setRequestingCancel] = useState(false);
 
   const fetchData = useCallback(async (userId: string) => {
     const [bookingsRes, invoicesRes, reviewsRes] = await Promise.all([
@@ -263,6 +265,25 @@ export default function UserDashboard() {
     } else {
       toast({ title: "Review submitted!", description: "Your review will appear after approval." });
       setReviewForm(null);
+      fetchData(user.id);
+    }
+  };
+
+  const handleRequestCancellation = async () => {
+    if (!cancelBookingId || !user) return;
+    setRequestingCancel(true);
+    const { error } = await supabase
+      .from("bookings")
+      .update({ cancellation_requested: true } as any)
+      .eq("id", cancelBookingId)
+      .eq("user_id", user.id);
+
+    setRequestingCancel(false);
+    setCancelBookingId(null);
+    if (error) {
+      toast({ title: "Error", description: "Could not send cancellation request.", variant: "destructive" });
+    } else {
+      toast({ title: "Request Sent", description: "Your cancellation request has been sent to the admin for approval." });
       fetchData(user.id);
     }
   };
@@ -377,6 +398,23 @@ export default function UserDashboard() {
                               <Star className="w-3 h-3 fill-current" /> Reviewed
                             </span>
                           )}
+                          {/* Cancel booking request */}
+                          {(booking.status === "pending" || booking.status === "confirmed") && !(booking as any).cancellation_requested && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                              onClick={() => setCancelBookingId(booking.id)}
+                            >
+                              <XCircle className="w-4 h-4 mr-1.5" />
+                              Cancel
+                            </Button>
+                          )}
+                          {(booking as any).cancellation_requested && booking.status !== "cancelled" && (
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-orange-100 text-orange-800">
+                              Cancellation Requested
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -457,6 +495,26 @@ export default function UserDashboard() {
               ))}
             </div>
           </section>
+        )}
+
+        {/* Cancellation Request Confirmation */}
+        {cancelBookingId && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setCancelBookingId(null)}>
+            <div className="bg-background rounded-lg shadow-xl max-w-md w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-lg font-semibold text-foreground">Request Cancellation</h3>
+              <p className="text-sm text-muted-foreground">
+                Are you sure you want to request cancellation for this booking? The admin will review and approve your request.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button variant="outline" size="sm" onClick={() => setCancelBookingId(null)}>
+                  No, Keep Booking
+                </Button>
+                <Button variant="destructive" size="sm" onClick={handleRequestCancellation} disabled={requestingCancel}>
+                  {requestingCancel ? "Sending…" : "Yes, Request Cancellation"}
+                </Button>
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>

@@ -131,6 +131,7 @@ export type Database = {
         Row: {
           adults: number
           booking_id: string
+          cancellation_requested: boolean
           check_in_date: string
           check_out_date: string
           children: number
@@ -153,6 +154,7 @@ export type Database = {
         Insert: {
           adults?: number
           booking_id: string
+          cancellation_requested?: boolean
           check_in_date: string
           check_out_date: string
           children?: number
@@ -175,6 +177,7 @@ export type Database = {
         Update: {
           adults?: number
           booking_id?: string
+          cancellation_requested?: boolean
           check_in_date?: string
           check_out_date?: string
           children?: number

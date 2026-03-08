@@ -112,7 +112,7 @@ export function GalleryManager() {
       image_url: imageUrl,
       alt_text: altText,
       caption: caption || null,
-      span_class: spanClass || "",
+      span_class: spanClass === "normal" ? "" : spanClass,
       is_active: isActive,
       display_order: editingPhoto?.display_order ?? photos.length,
     };

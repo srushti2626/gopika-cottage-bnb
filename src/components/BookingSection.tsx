@@ -633,7 +633,7 @@ const BookingSection = () => {
 
                 {/* Additional Services */}
                 {addonServices.length > 0 && (
-                  <div className="lg:col-span-2 xl:col-span-2">
+                  <div className="lg:col-span-3">
                     <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
                       <Plus className="w-5 h-5 text-primary" />
                       Additional Services

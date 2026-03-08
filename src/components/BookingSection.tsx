@@ -307,7 +307,7 @@ const BookingSection = () => {
         </div>
 
         {/* Booking Card */}
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="card-cottage p-6 lg:p-10">
             {loading || authLoading ? (
               <div className="flex items-center justify-center py-12">

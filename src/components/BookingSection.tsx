@@ -197,8 +197,17 @@ const BookingSection = () => {
       return;
     }
 
+    setSubmitting(true);
     try {
-      setSubmitting(true);
+      // Refresh session before making the request to avoid stale token issues
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError || !refreshData.session) {
+        toast({ title: "Session Expired", description: "Please sign in again to continue.", variant: "destructive" });
+        await supabase.auth.signOut();
+        navigate("/auth");
+        return;
+      }
+
       const addonsPayload = addonServices
         .filter((a) => (addonQuantities[a.id] || 0) > 0)
         .map((a) => ({
@@ -224,13 +233,20 @@ const BookingSection = () => {
       });
 
       if (error) {
-        toast({ title: "Booking Failed", description: error.message || "Please try again in a moment.", variant: "destructive" });
+        const msg = error.message || "Please try again in a moment.";
+        if (msg.includes("expired") || msg.includes("Unauthorized") || msg.includes("401")) {
+          toast({ title: "Session Expired", description: "Please sign in again.", variant: "destructive" });
+          await supabase.auth.signOut();
+          navigate("/auth");
+        } else {
+          toast({ title: "Booking Failed", description: msg, variant: "destructive" });
+        }
         return;
       }
 
-      // Navigate to payment confirmation page
       navigate(`/booking-confirmation?id=${data?.bookingId}`);
-    } catch (e) {
+    } catch (e: any) {
+      console.error("Booking error:", e);
       toast({ title: "Booking Failed", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setSubmitting(false);

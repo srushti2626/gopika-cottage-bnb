@@ -1,6 +1,5 @@
 // Edge function: Create a Razorpay order for a booking
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.5";
-import { hmac } from "https://deno.land/x/hmac@v2.0.1/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

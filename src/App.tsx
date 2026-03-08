@@ -11,6 +11,7 @@ import AdminLogin from "./pages/AdminLogin";
 import UserDashboard from "./pages/UserDashboard";
 import ResetPassword from "./pages/ResetPassword";
 import BookingConfirmation from "./pages/BookingConfirmation";
+import AdditionalServices from "./pages/AdditionalServices";
 
 const queryClient = new QueryClient();
 

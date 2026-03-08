@@ -631,6 +631,66 @@ const BookingSection = () => {
                   )}
                 </div>
 
+                {/* Additional Services */}
+                {addonServices.length > 0 && (
+                  <div className="lg:col-span-2 xl:col-span-2">
+                    <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <Plus className="w-5 h-5 text-primary" />
+                      Additional Services
+                    </h3>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {addonServices.map((addon) => {
+                        const isSelected = selectedAddons.has(addon.id);
+                        const addonCost = addon.price_type === "per_person"
+                          ? addon.price * totalGuests
+                          : addon.price;
+                        return (
+                          <div
+                            key={addon.id}
+                            className={cn(
+                              "flex items-start gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer",
+                              isSelected
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover:border-primary/50"
+                            )}
+                            onClick={() => toggleAddon(addon.id)}
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleAddon(addon.id)}
+                              className="mt-0.5"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <span className="font-semibold text-sm text-foreground">{addon.name}</span>
+                                  {addon.description && (
+                                    <p className="text-xs text-muted-foreground mt-0.5">{addon.description}</p>
+                                  )}
+                                </div>
+                                <div className="text-right ml-2 flex-shrink-0">
+                                  <span className="font-semibold text-sm text-primary">
+                                    ₹{addon.price.toLocaleString()}
+                                  </span>
+                                  <p className="text-xs text-muted-foreground">
+                                    {addon.price_type === "per_person" ? "per person" : "flat rate"}
+                                  </p>
+                                </div>
+                              </div>
+                              {isSelected && (
+                                <p className="text-xs text-primary font-medium mt-1">
+                                  +₹{addonCost.toLocaleString()}
+                                  {addon.price_type === "per_person" && ` (${totalGuests} guest${totalGuests > 1 ? "s" : ""})`}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Price Summary */}
                 <div className="bg-secondary/50 rounded-xl p-6 h-fit lg:sticky lg:top-4">
                   <h3 className="text-xl font-semibold text-foreground mb-6">

@@ -58,7 +58,12 @@ const BookingSection = () => {
 
   // Check auth state
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data, error }) => {
+      // If the stored session has a stale/invalid refresh token, sign out
+      // so the user gets a clean login prompt instead of a frozen UI.
+      if (error || (data.session === null && localStorage.getItem("sb-rrpzaxzskmpmmzbdrsqb-auth-token"))) {
+        await supabase.auth.signOut();
+      }
       setSession(data.session);
       if (data.session) {
         setEmail(data.session.user.email ?? "");

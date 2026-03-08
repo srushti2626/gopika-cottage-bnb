@@ -244,7 +244,15 @@ const BookingSection = () => {
         return;
       }
 
-      navigate(`/booking-confirmation?id=${data?.bookingId}`);
+      console.log("Booking response data:", JSON.stringify(data));
+      const confirmedBookingId = data?.bookingId;
+      if (!confirmedBookingId) {
+        toast({ title: "Booking Failed", description: "Could not retrieve booking details. Please check your dashboard.", variant: "destructive" });
+        navigate("/dashboard");
+        return;
+      }
+
+      navigate(`/booking-confirmation?id=${confirmedBookingId}`);
     } catch (e: any) {
       console.error("Booking error:", e);
       toast({ title: "Booking Failed", description: "Something went wrong. Please try again.", variant: "destructive" });

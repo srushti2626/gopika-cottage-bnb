@@ -10,6 +10,7 @@ import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
 import UserDashboard from "./pages/UserDashboard";
 import ResetPassword from "./pages/ResetPassword";
+import BookingConfirmation from "./pages/BookingConfirmation";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/booking-confirmation" element={<BookingConfirmation />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

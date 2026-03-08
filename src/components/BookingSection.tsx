@@ -161,21 +161,8 @@ const BookingSection = () => {
         return;
       }
 
-      toast({
-        title: "Booking Request Submitted!",
-        description: `Booking ID: ${data?.bookingId ?? "(pending)"}. Total: ₹${total.toLocaleString()}. View it in your dashboard.`,
-      });
-
-      // Reset form (keep roomType)
-      setCheckIn(undefined);
-      setCheckOut(undefined);
-      setFullName("");
-      setMobileNumber("");
-      setEmail(session?.user?.email ?? "");
-      setAdults(2);
-      setChildren(0);
-      setSpecialRequests("");
-      setErrors({});
+      // Navigate to payment confirmation page
+      navigate(`/booking-confirmation?id=${data?.bookingId}`);
     } catch (e) {
       toast({ title: "Booking Failed", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {

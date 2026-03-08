@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, CalendarDays, Download, Home, Star, MessageSquare, Send } from "lucide-react";
+import { LogOut, User, CalendarDays, Download, Home, Star, MessageSquare, Send, CreditCard } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -299,7 +299,22 @@ export default function UserDashboard() {
                         }`}>
                           {booking.status}
                         </span>
+                        {booking.payment_status === "paid" && (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-800">
+                            ✓ Paid
+                          </span>
+                        )}
                         <div className="flex gap-2 mt-1">
+                          {booking.payment_status !== "paid" && booking.status !== "cancelled" && (
+                            <Button
+                              variant="hero"
+                              size="sm"
+                              onClick={() => navigate(`/booking-confirmation?id=${booking.booking_id}`)}
+                            >
+                              <CreditCard className="w-4 h-4 mr-1.5" />
+                              Pay Now
+                            </Button>
+                          )}
                           {invoice && (
                             <Button
                               variant="outline"
@@ -307,7 +322,7 @@ export default function UserDashboard() {
                               onClick={() => generateInvoicePdf(booking, invoice)}
                             >
                               <Download className="w-4 h-4 mr-1.5" />
-                              Download Invoice
+                              Invoice
                             </Button>
                           )}
                           {(booking.status === "confirmed" || booking.status === "completed") && !reviewed && (
@@ -317,7 +332,7 @@ export default function UserDashboard() {
                               onClick={() => setReviewForm({ bookingId: booking.id, rating: 5, text: "" })}
                             >
                               <Star className="w-4 h-4 mr-1.5" />
-                              Write Review
+                              Review
                             </Button>
                           )}
                           {reviewed && (

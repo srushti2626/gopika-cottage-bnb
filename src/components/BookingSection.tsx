@@ -116,25 +116,36 @@ const BookingSection = () => {
   const totalGuests = adults + children;
 
   // Calculate add-on totals
-  const addonTotal = addonServices
-    .filter((a) => selectedAddons.has(a.id))
-    .reduce((sum, a) => {
-      if (a.price_type === "per_person") return sum + a.price * totalGuests;
-      return sum + a.price;
-    }, 0);
+  const addonTotal = addonServices.reduce((sum, a) => {
+    const qty = addonQuantities[a.id] || 0;
+    return sum + a.price * qty;
+  }, 0);
 
   const subtotal = roomSubtotal + addonTotal;
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + tax;
 
-  const toggleAddon = (id: string) => {
-    setSelectedAddons((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+  const incrementAddon = (id: string) => {
+    setAddonQuantities((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
+  };
+
+  const decrementAddon = (id: string) => {
+    setAddonQuantities((prev) => {
+      const current = prev[id] || 0;
+      if (current <= 1) {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      }
+      return { ...prev, [id]: current - 1 };
     });
   };
+
+  // Categorize add-on services
+  const breakfastAddons = addonServices.filter((a) => a.display_order >= 1 && a.display_order <= 14);
+  const vegAddons = addonServices.filter((a) => a.display_order >= 15 && a.display_order <= 18);
+  const nonVegAddons = addonServices.filter((a) => a.display_order >= 19 && a.display_order <= 26);
+  const otherAddons = addonServices.filter((a) => a.display_order >= 27);
 
   const unavailableDates = getUnavailableDatesForRoomType(roomType);
 

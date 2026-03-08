@@ -22,7 +22,7 @@ const Index = () => {
         <Amenities />
         <Gallery />
         <Pricing />
-        <FoodMenu />
+        
         <CottageRules />
         <Testimonials />
         <BookingSection />

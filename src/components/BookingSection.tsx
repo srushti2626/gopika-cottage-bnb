@@ -755,14 +755,14 @@ const BookingSection = () => {
 
                     {/* Selected Add-ons */}
                     {addonServices
-                      .filter((a) => selectedAddons.has(a.id))
+                      .filter((a) => (addonQuantities[a.id] || 0) > 0)
                       .map((a) => {
-                        const cost = a.price_type === "per_person" ? a.price * totalGuests : a.price;
+                        const qty = addonQuantities[a.id];
+                        const cost = a.price * qty;
                         return (
                           <div key={a.id} className="flex justify-between items-center text-sm">
                             <span className="text-muted-foreground">
-                              {a.name}
-                              {a.price_type === "per_person" && ` (×${totalGuests})`}
+                              {a.name} ×{qty}
                             </span>
                             <span className="font-medium">₹{cost.toLocaleString()}</span>
                           </div>

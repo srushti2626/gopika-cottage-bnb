@@ -823,6 +823,7 @@ const BookingSection = () => {
                     Free cancellation up to 48 hours before check-in
                   </p>
                 </div>
+                </div>
               </div>
             )}
           </div>

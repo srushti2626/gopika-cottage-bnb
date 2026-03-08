@@ -398,6 +398,23 @@ export default function UserDashboard() {
                               <Star className="w-3 h-3 fill-current" /> Reviewed
                             </span>
                           )}
+                          {/* Cancel booking request */}
+                          {(booking.status === "pending" || booking.status === "confirmed") && !(booking as any).cancellation_requested && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                              onClick={() => setCancelBookingId(booking.id)}
+                            >
+                              <XCircle className="w-4 h-4 mr-1.5" />
+                              Cancel
+                            </Button>
+                          )}
+                          {(booking as any).cancellation_requested && booking.status !== "cancelled" && (
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-orange-100 text-orange-800">
+                              Cancellation Requested
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

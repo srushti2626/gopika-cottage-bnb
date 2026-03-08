@@ -356,7 +356,7 @@ export default function UserDashboard() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => generateInvoicePdf(booking, invoice)}
+                              onClick={() => generateInvoicePdf(booking, invoice, bookingAddons[booking.id] || [])}
                             >
                               <Download className="w-4 h-4 mr-1.5" />
                               Invoice

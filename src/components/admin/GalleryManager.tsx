@@ -68,7 +68,7 @@ export function GalleryManager() {
     setImageUrl(photo.image_url);
     setAltText(photo.alt_text);
     setCaption(photo.caption || "");
-    setSpanClass(photo.span_class || "");
+    setSpanClass(photo.span_class || "normal");
     setIsActive(photo.is_active);
     setDialogOpen(true);
   };

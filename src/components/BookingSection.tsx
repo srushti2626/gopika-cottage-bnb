@@ -65,9 +65,23 @@ const BookingSection = () => {
   const [specialRequests, setSpecialRequests] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [addonServices, setAddonServices] = useState<AddonService[]>([]);
+  const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
 
   const { loading, checkAvailability, getPriceByRoomType, getUnavailableDatesForRoomType, rooms } =
     useRoomAvailability();
+
+  // Fetch add-on services
+  useEffect(() => {
+    supabase
+      .from("addon_services")
+      .select("*")
+      .eq("is_active", true)
+      .order("display_order")
+      .then(({ data }) => {
+        if (data) setAddonServices(data as AddonService[]);
+      });
+  }, []);
 
   // Check auth state
   useEffect(() => {

@@ -199,35 +199,18 @@ const BookingSection = () => {
 
     setSubmitting(true);
     try {
-      // Refresh session with a timeout to prevent hanging
-      let currentSession = session;
-      try {
-        const refreshPromise = supabase.auth.refreshSession();
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Session refresh timeout")), 5000)
-        );
-        const { data: refreshData, error: refreshError } = await Promise.race([refreshPromise, timeoutPromise]) as any;
-        if (refreshError || !refreshData?.session) {
-          // If refresh fails, try using existing session
-          const { data: sessionData } = await supabase.auth.getSession();
-          if (!sessionData.session) {
-            toast({ title: "Session Expired", description: "Please sign in again to continue.", variant: "destructive" });
-            await supabase.auth.signOut();
-            navigate("/auth");
-            return;
-          }
-          currentSession = sessionData.session;
-        } else {
-          currentSession = refreshData.session;
-        }
-      } catch {
-        // Timeout or error - proceed with existing session
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (!sessionData.session) {
-          toast({ title: "Session Expired", description: "Please sign in again.", variant: "destructive" });
-          navigate("/auth");
-          return;
-        }
+      // Quick session check (no forced refresh to avoid UI hangs)
+      const sessionResult = await Promise.race([
+        supabase.auth.getSession(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Session check timeout")), 4000)
+        ),
+      ]) as any;
+
+      if (!sessionResult?.data?.session) {
+        toast({ title: "Session Expired", description: "Please sign in again.", variant: "destructive" });
+        navigate("/auth");
+        return;
       }
 
       const addonsPayload = addonServices
@@ -239,14 +222,9 @@ const BookingSection = () => {
           totalPrice: a.price * addonQuantities[a.id],
         }));
 
-      // Invoke edge function with timeout
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
-
-      let data: any;
-      let error: any;
-      try {
-        const result = await supabase.functions.invoke("create-booking", {
+      // Hard timeout guard so button never gets stuck in loading state
+      const invokeResult = await Promise.race([
+        supabase.functions.invoke("create-booking", {
           body: {
             roomType,
             checkInDate: format(checkIn!, "yyyy-MM-dd"),
@@ -259,12 +237,14 @@ const BookingSection = () => {
             specialRequests: specialRequests.trim() ? specialRequests.trim() : null,
             addons: addonsPayload,
           },
-        });
-        data = result.data;
-        error = result.error;
-      } finally {
-        clearTimeout(timeout);
-      }
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Booking request timeout")), 30000)
+        ),
+      ]) as any;
+
+      const data = invokeResult?.data;
+      const error = invokeResult?.error;
 
       if (error) {
         const msg = error.message || "Please try again in a moment.";
@@ -278,13 +258,11 @@ const BookingSection = () => {
         return;
       }
 
-      // Handle edge function returning error in body
       if (data?.error) {
         toast({ title: "Booking Failed", description: data.error, variant: "destructive" });
         return;
       }
 
-      console.log("Booking response data:", JSON.stringify(data));
       const confirmedBookingId = data?.bookingId;
       if (!confirmedBookingId) {
         toast({ title: "Booking Failed", description: "Could not retrieve booking details. Please check your dashboard.", variant: "destructive" });
@@ -294,8 +272,9 @@ const BookingSection = () => {
 
       navigate(`/booking-confirmation?id=${confirmedBookingId}`);
     } catch (e: any) {
-      console.error("Booking error:", e);
-      const msg = e?.name === "AbortError" ? "Request timed out. Please try again." : "Something went wrong. Please try again.";
+      const msg = e?.message?.includes("timeout")
+        ? "Request timed out. Please try again."
+        : "Something went wrong. Please try again.";
       toast({ title: "Booking Failed", description: msg, variant: "destructive" });
     } finally {
       setSubmitting(false);

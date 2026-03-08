@@ -112,10 +112,29 @@ const BookingSection = () => {
   const availability = checkAvailability(checkIn, checkOut, roomType);
   const pricePerNight = getPriceByRoomType(roomType);
   const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
-  const subtotal = nights * pricePerNight;
+  const roomSubtotal = nights * pricePerNight;
+  const totalGuests = adults + children;
+
+  // Calculate add-on totals
+  const addonTotal = addonServices
+    .filter((a) => selectedAddons.has(a.id))
+    .reduce((sum, a) => {
+      if (a.price_type === "per_person") return sum + a.price * totalGuests;
+      return sum + a.price;
+    }, 0);
+
+  const subtotal = roomSubtotal + addonTotal;
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + tax;
-  const totalGuests = adults + children;
+
+  const toggleAddon = (id: string) => {
+    setSelectedAddons((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const unavailableDates = getUnavailableDatesForRoomType(roomType);
 

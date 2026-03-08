@@ -741,7 +741,8 @@ const BookingSection = () => {
                 )}
 
                 {/* Price Summary */}
-                <div className="bg-secondary/50 rounded-xl p-6 h-fit lg:sticky lg:top-4">
+                <div className="lg:col-span-2 flex justify-center">
+                <div className="bg-secondary/50 rounded-xl p-6 h-fit w-full max-w-lg">
                   <h3 className="text-xl font-semibold text-foreground mb-6">
                     Price Summary
                   </h3>
@@ -821,6 +822,7 @@ const BookingSection = () => {
                   <p className="text-xs text-muted-foreground text-center mt-4">
                     Free cancellation up to 48 hours before check-in
                   </p>
+                </div>
                 </div>
               </div>
             )}

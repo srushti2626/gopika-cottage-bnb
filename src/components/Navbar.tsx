@@ -77,9 +77,15 @@ const Navbar = () => {
         {/* Mobile Menu */}
         {isOpen && <div className="lg:hidden py-4 border-t border-border/50 animate-fade-in">
             <div className="flex flex-col gap-4">
-              {navLinks.map(link => <a key={link.name} href={link.href} onClick={() => setIsOpen(false)} className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2">
+              {navLinks.map(link => link.href.startsWith("/") ? (
+                <Link key={link.name} to={link.href} onClick={() => setIsOpen(false)} className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2">
                   {link.name}
-                </a>)}
+                </Link>
+              ) : (
+                <a key={link.name} href={link.href} onClick={() => setIsOpen(false)} className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2">
+                  {link.name}
+                </a>
+              ))}
               <div className="pt-4 border-t border-border/50 flex flex-col gap-2">
                 <Button variant="hero" size="lg" className="w-full" asChild>
                   <a href="#booking">Book Now</a>

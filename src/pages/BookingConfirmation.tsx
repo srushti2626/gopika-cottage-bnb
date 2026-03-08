@@ -96,42 +96,71 @@ function generateReceiptHtml(booking: Tables<"bookings">, addons: BookingAddon[]
 export default function BookingConfirmation() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const bookingId = searchParams.get("id");
+  const bookingReference = searchParams.get("id")?.trim() ?? "";
 
   const [booking, setBooking] = useState<Tables<"bookings"> | null>(null);
   const [addons, setAddons] = useState<BookingAddon[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notFoundMessage, setNotFoundMessage] = useState<string | null>(null);
 
   const fetchBooking = useCallback(async () => {
-    if (!bookingId) {
+    if (!bookingReference) {
+      setNotFoundMessage("No booking reference was provided.");
       setLoading(false);
       return;
     }
 
-    const { data, error } = await supabase
-      .from("bookings")
-      .select("*")
-      .eq("booking_id", bookingId.trim())
-      .maybeSingle();
+    let normalizedReference = bookingReference;
+    try {
+      normalizedReference = decodeURIComponent(bookingReference).trim();
+    } catch {
+      normalizedReference = bookingReference.trim();
+    }
+
+    const isUuidReference =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalizedReference);
+
+    let data: Tables<"bookings"> | null = null;
+    let error: Error | null = null;
+
+    if (isUuidReference) {
+      const byUuid = await supabase.from("bookings").select("*").eq("id", normalizedReference).maybeSingle();
+      data = byUuid.data;
+      error = byUuid.error as Error | null;
+    }
+
+    if (!data && !error) {
+      const byBookingId = await supabase
+        .from("bookings")
+        .select("*")
+        .ilike("booking_id", normalizedReference)
+        .maybeSingle();
+      data = byBookingId.data;
+      error = byBookingId.error as Error | null;
+    }
 
     if (error) {
       console.error("Error loading booking confirmation:", error);
+      setNotFoundMessage("We couldn't load your booking right now. Please try again.");
       setLoading(false);
       return;
     }
 
     if (data) {
       setBooking(data);
+      setNotFoundMessage(null);
       // Fetch add-ons for this booking
       const { data: addonData } = await supabase
         .from("booking_addons")
         .select("*, addon_services(name, price_type)")
         .eq("booking_id", data.id);
       if (addonData) setAddons(addonData as BookingAddon[]);
+    } else {
+      setNotFoundMessage("This booking link is invalid, expired, or the booking was removed.");
     }
 
     setLoading(false);
-  }, [bookingId]);
+  }, [bookingReference]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {

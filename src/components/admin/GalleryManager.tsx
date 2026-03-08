@@ -32,7 +32,7 @@ export function GalleryManager() {
   const [imageUrl, setImageUrl] = useState("");
   const [altText, setAltText] = useState("");
   const [caption, setCaption] = useState("");
-  const [spanClass, setSpanClass] = useState("");
+  const [spanClass, setSpanClass] = useState("normal");
   const [isActive, setIsActive] = useState(true);
 
   const fetchPhotos = async () => {
@@ -68,7 +68,7 @@ export function GalleryManager() {
     setImageUrl(photo.image_url);
     setAltText(photo.alt_text);
     setCaption(photo.caption || "");
-    setSpanClass(photo.span_class || "");
+    setSpanClass(photo.span_class || "normal");
     setIsActive(photo.is_active);
     setDialogOpen(true);
   };
@@ -112,7 +112,7 @@ export function GalleryManager() {
       image_url: imageUrl,
       alt_text: altText,
       caption: caption || null,
-      span_class: spanClass || "",
+      span_class: spanClass === "normal" ? "" : spanClass,
       is_active: isActive,
       display_order: editingPhoto?.display_order ?? photos.length,
     };
@@ -262,7 +262,7 @@ export function GalleryManager() {
                     <SelectValue placeholder="Select size" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Normal</SelectItem>
+                    <SelectItem value="normal">Normal</SelectItem>
                     <SelectItem value="md:col-span-2">Wide (2 columns)</SelectItem>
                     <SelectItem value="md:col-span-2 md:row-span-2">Large (2x2)</SelectItem>
                   </SelectContent>

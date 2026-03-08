@@ -103,12 +103,22 @@ export default function BookingConfirmation() {
   const [loading, setLoading] = useState(true);
 
   const fetchBooking = useCallback(async () => {
-    if (!bookingId) return;
-    const { data } = await supabase
+    if (!bookingId) {
+      setLoading(false);
+      return;
+    }
+
+    const { data, error } = await supabase
       .from("bookings")
       .select("*")
-      .eq("booking_id", bookingId)
-      .single();
+      .eq("booking_id", bookingId.trim())
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error loading booking confirmation:", error);
+      setLoading(false);
+      return;
+    }
 
     if (data) {
       setBooking(data);
@@ -119,6 +129,7 @@ export default function BookingConfirmation() {
         .eq("booking_id", data.id);
       if (addonData) setAddons(addonData as BookingAddon[]);
     }
+
     setLoading(false);
   }, [bookingId]);
 

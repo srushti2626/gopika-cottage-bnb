@@ -193,13 +193,19 @@ export default function BookingConfirmation() {
 
   if (!booking) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <AlertCircle className="w-12 h-12 text-destructive mx-auto" />
-          <h2 className="text-xl font-heading font-semibold">Booking Not Found</h2>
-          <Button variant="outline" asChild>
-            <Link to="/"><Home className="w-4 h-4 mr-2" /> Go Home</Link>
-          </Button>
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center space-y-4 max-w-md">
+          <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto" />
+          <h2 className="text-xl font-heading font-semibold">Booking Unavailable</h2>
+          <p className="text-sm text-muted-foreground">{notFoundMessage ?? "We couldn't find this booking."}</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button asChild>
+              <Link to="/dashboard">Go to Dashboard</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/"><Home className="w-4 h-4 mr-2" /> Go Home</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );

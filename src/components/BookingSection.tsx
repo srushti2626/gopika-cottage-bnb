@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   CalendarIcon,
   Users,
@@ -17,6 +18,9 @@ import {
   Baby,
   User,
   LogIn,
+  UtensilsCrossed,
+  MapPin,
+  Plus,
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -25,6 +29,15 @@ import type { Database } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+
+interface AddonService {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  price_type: "per_person" | "flat";
+  display_order: number;
+}
 
 type RoomType = Database["public"]["Enums"]["room_type"];
 

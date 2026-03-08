@@ -269,6 +269,25 @@ export default function UserDashboard() {
     }
   };
 
+  const handleRequestCancellation = async () => {
+    if (!cancelBookingId || !user) return;
+    setRequestingCancel(true);
+    const { error } = await supabase
+      .from("bookings")
+      .update({ cancellation_requested: true } as any)
+      .eq("id", cancelBookingId)
+      .eq("user_id", user.id);
+
+    setRequestingCancel(false);
+    setCancelBookingId(null);
+    if (error) {
+      toast({ title: "Error", description: "Could not send cancellation request.", variant: "destructive" });
+    } else {
+      toast({ title: "Request Sent", description: "Your cancellation request has been sent to the admin for approval." });
+      fetchData(user.id);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

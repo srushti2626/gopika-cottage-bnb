@@ -40,9 +40,15 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">
-            {navLinks.map(link => <a key={link.name} href={link.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 mx-0 my-0 px-0 py-[2px] font-serif border-0">
+            {navLinks.map(link => link.href.startsWith("/") ? (
+              <Link key={link.name} to={link.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 mx-0 my-0 px-0 py-[2px] font-serif border-0">
                 {link.name}
-              </a>)}
+              </Link>
+            ) : (
+              <a key={link.name} href={link.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 mx-0 my-0 px-0 py-[2px] font-serif border-0">
+                {link.name}
+              </a>
+            ))}
           </div>
 
           {/* CTA Buttons */}

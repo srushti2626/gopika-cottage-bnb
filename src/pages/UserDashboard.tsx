@@ -169,6 +169,8 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [reviewForm, setReviewForm] = useState<ReviewForm | null>(null);
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [cancelBookingId, setCancelBookingId] = useState<string | null>(null);
+  const [requestingCancel, setRequestingCancel] = useState(false);
 
   const fetchData = useCallback(async (userId: string) => {
     const [bookingsRes, invoicesRes, reviewsRes] = await Promise.all([

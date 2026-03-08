@@ -7,7 +7,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
-function generateInvoicePdf(booking: Tables<"bookings">, invoice: Tables<"invoices">) {
+function generateInvoicePdf(booking: Tables<"bookings">, invoice: Tables<"invoices">, addons: BookingAddon[] = []) {
   const roomLabel = booking.room_type === "ac" ? "AC Room" : "Non-AC Room";
   const subtotal = invoice.subtotal;
   const tax = invoice.tax_amount;

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, CalendarDays, Download, Home, Star, MessageSquare, Send, CreditCard } from "lucide-react";
+import { LogOut, User, CalendarDays, Download, Home, Star, MessageSquare, Send, CreditCard, XCircle } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";

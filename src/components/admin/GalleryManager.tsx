@@ -262,7 +262,7 @@ export function GalleryManager() {
                     <SelectValue placeholder="Select size" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Normal</SelectItem>
+                    <SelectItem value="normal">Normal</SelectItem>
                     <SelectItem value="md:col-span-2">Wide (2 columns)</SelectItem>
                     <SelectItem value="md:col-span-2 md:row-span-2">Large (2x2)</SelectItem>
                   </SelectContent>

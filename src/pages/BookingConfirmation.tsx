@@ -14,10 +14,23 @@ import {
 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
-function generateReceiptHtml(booking: Tables<"bookings">) {
+interface BookingAddon {
+  id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  addon_service_id: string;
+  addon_services?: { name: string; price_type: string } | null;
+}
+
+function generateReceiptHtml(booking: Tables<"bookings">, addons: BookingAddon[]) {
   const subtotal = Math.round(booking.total_amount / 1.18);
   const gst = booking.total_amount - subtotal;
   const roomLabel = booking.room_type === "ac" ? "AC Room" : "Non-AC Room";
+
+  const addonRows = addons.map(
+    (a) => `<tr><td>${a.addon_services?.name || "Add-on"}</td><td>₹${a.total_price.toLocaleString("en-IN")}</td></tr>`
+  ).join("");
 
   return `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>Booking Confirmation - ${booking.booking_id}</title>
@@ -64,6 +77,7 @@ function generateReceiptHtml(booking: Tables<"bookings">) {
       <tr><td>Duration</td><td>${booking.total_nights} Night${booking.total_nights > 1 ? "s" : ""}</td></tr>
     </table>
   </div>
+  ${addons.length > 0 ? `<div class="section"><h3>Additional Services</h3><table>${addonRows}</table></div>` : ""}
   <div class="section"><h3>Amount</h3>
     <table>
       <tr><td>Subtotal</td><td>₹${subtotal.toLocaleString("en-IN")}</td></tr>
@@ -85,6 +99,7 @@ export default function BookingConfirmation() {
   const bookingId = searchParams.get("id");
 
   const [booking, setBooking] = useState<Tables<"bookings"> | null>(null);
+  const [addons, setAddons] = useState<BookingAddon[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchBooking = useCallback(async () => {
@@ -95,7 +110,15 @@ export default function BookingConfirmation() {
       .eq("booking_id", bookingId)
       .single();
 
-    if (data) setBooking(data);
+    if (data) {
+      setBooking(data);
+      // Fetch add-ons for this booking
+      const { data: addonData } = await supabase
+        .from("booking_addons")
+        .select("*, addon_services(name, price_type)")
+        .eq("booking_id", data.id);
+      if (addonData) setAddons(addonData as BookingAddon[]);
+    }
     setLoading(false);
   }, [bookingId]);
 
@@ -111,7 +134,7 @@ export default function BookingConfirmation() {
 
   const handleDownloadReceipt = () => {
     if (!booking) return;
-    const html = generateReceiptHtml(booking);
+    const html = generateReceiptHtml(booking, addons);
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const win = window.open(url, "_blank");
@@ -192,6 +215,24 @@ export default function BookingConfirmation() {
               <span className="text-muted-foreground">Nights</span>
               <span className="font-medium">{booking.total_nights}</span>
             </div>
+
+            {/* Add-ons */}
+            {addons.length > 0 && (
+              <>
+                <div className="h-px bg-border" />
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Additional Services</p>
+                {addons.map((a) => (
+                  <div key={a.id} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {a.addon_services?.name || "Add-on"}
+                      {a.quantity > 1 && ` (×${a.quantity})`}
+                    </span>
+                    <span className="font-medium">₹{a.total_price.toLocaleString("en-IN")}</span>
+                  </div>
+                ))}
+              </>
+            )}
+
             <div className="h-px bg-border" />
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>

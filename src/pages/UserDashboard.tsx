@@ -107,6 +107,14 @@ function generateInvoicePdf(booking: Tables<"bookings">, invoice: Tables<"invoic
     </table>
   </div>
 
+  ${addons.length > 0 ? `
+  <div class="section">
+    <h3>Additional Services</h3>
+    <table>
+      ${addons.map((a) => `<tr><td>${a.addon_services?.name || "Add-on"}${a.quantity > 1 ? ` (×${a.quantity})` : ""}</td><td style="text-align:right">₹${a.total_price.toLocaleString("en-IN")}</td></tr>`).join("")}
+    </table>
+  </div>` : ""}
+
   <div class="section">
     <h3>Price Breakdown</h3>
     <table>

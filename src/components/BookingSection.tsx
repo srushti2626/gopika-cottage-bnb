@@ -200,12 +200,12 @@ const BookingSection = () => {
     try {
       setSubmitting(true);
       const addonsPayload = addonServices
-        .filter((a) => selectedAddons.has(a.id))
+        .filter((a) => (addonQuantities[a.id] || 0) > 0)
         .map((a) => ({
           addonServiceId: a.id,
-          quantity: a.price_type === "per_person" ? totalGuests : 1,
+          quantity: addonQuantities[a.id],
           unitPrice: a.price,
-          totalPrice: a.price_type === "per_person" ? a.price * totalGuests : a.price,
+          totalPrice: a.price * addonQuantities[a.id],
         }));
 
       const { data, error } = await supabase.functions.invoke("create-booking", {

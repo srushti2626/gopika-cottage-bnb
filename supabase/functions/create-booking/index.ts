@@ -1,5 +1,6 @@
 // Backend function: create-booking
-// Authenticated booking creation with server-side validation and availability check.
+// Authenticated booking creation with server-side validation.
+// Uses an atomic database function to prevent double-booking race conditions.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.5";
 
@@ -40,13 +41,6 @@ function parseDateOnly(value: string): Date | null {
 function daysBetween(checkIn: Date, checkOut: Date): number {
   const ms = checkOut.getTime() - checkIn.getTime();
   return Math.floor(ms / (24 * 60 * 60 * 1000));
-}
-
-function yyyymmdd(d: Date): string {
-  const yyyy = d.getUTCFullYear();
-  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const dd = String(d.getUTCDate()).padStart(2, "0");
-  return `${yyyy}${mm}${dd}`;
 }
 
 Deno.serve(async (req) => {
@@ -172,130 +166,36 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: "Too many guests" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
-  // Find available room
-  const { data: rooms, error: roomsError } = await supabase
-    .from("rooms")
-    .select("id, price_per_night, max_guests")
-    .eq("is_active", true)
-    .eq("room_type", roomType)
-    .gte("max_guests", totalGuests)
-    .limit(25);
-
-  if (roomsError) {
-    console.error("roomsError", roomsError);
-    return new Response(JSON.stringify({ error: "Unable to check availability" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-  }
-
-  if (!rooms || rooms.length === 0) {
-    return new Response(JSON.stringify({ error: "No rooms available for selected guest count" }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-  }
-
-  const lastNight = new Date(checkOut);
-  lastNight.setUTCDate(lastNight.getUTCDate() - 1);
-  const lastNightStr = `${lastNight.getUTCFullYear()}-${String(lastNight.getUTCMonth() + 1).padStart(2, "0")}-${String(lastNight.getUTCDate()).padStart(2, "0")}`;
-
-  let selectedRoomId: string | null = null;
-  let pricePerNight = 0;
-
-  for (const r of rooms) {
-    const roomId = r.id as string;
-
-    const { data: blocked, error: blockedError } = await supabase
-      .from("blocked_dates")
-      .select("id")
-      .gte("blocked_date", checkInStr)
-      .lte("blocked_date", lastNightStr)
-      .or(`room_id.is.null,room_id.eq.${roomId}`)
-      .limit(1);
-    if (blockedError) {
-      console.error("blockedError", blockedError);
-      return new Response(JSON.stringify({ error: "Unable to check availability" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    if (blocked && blocked.length > 0) continue;
-
-    const { data: conflicts, error: conflictsError } = await supabase
-      .from("bookings")
-      .select("id")
-      .eq("room_id", roomId)
-      .in("status", ["pending", "confirmed"])
-      .lt("check_in_date", checkOutStr)
-      .gt("check_out_date", checkInStr)
-      .limit(1);
-    if (conflictsError) {
-      console.error("conflictsError", conflictsError);
-      return new Response(JSON.stringify({ error: "Unable to check availability" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    if (conflicts && conflicts.length > 0) continue;
-
-    selectedRoomId = roomId;
-    pricePerNight = Number(r.price_per_night ?? 0);
-    break;
-  }
-
-  if (!selectedRoomId) {
-    return new Response(JSON.stringify({ error: "No rooms available for selected dates" }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-  }
-
-  if (!Number.isFinite(pricePerNight) || pricePerNight <= 0) {
-    console.error("Invalid price_per_night for selected room");
-    return new Response(JSON.stringify({ error: "Unable to calculate price" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-  }
-
-  const subtotal = pricePerNight * nights;
-  const tax = Math.round(subtotal * 0.18);
-  const totalAmount = subtotal + tax;
-
-  const id = crypto.randomUUID();
-  const bookingId = `GC${yyyymmdd(new Date())}-${id.slice(0, 8)}`;
-
-  // Insert booking linked to authenticated user
-  const { error: insertError } = await supabase.from("bookings").insert({
-    id,
-    booking_id: bookingId,
-    room_id: selectedRoomId,
-    room_type: roomType,
-    check_in_date: checkInStr,
-    check_out_date: checkOutStr,
-    total_nights: nights,
-    total_amount: totalAmount,
-    status: "pending",
-    full_name: fullName,
-    mobile_number: mobileNumber,
-    email,
-    adults,
-    children,
-    special_requests: specialRequests,
-    user_id: user.id,
-    payment_status: "unpaid",
+  // Use atomic database function to prevent race conditions
+  const { data: result, error: rpcError } = await supabase.rpc("create_booking_atomic", {
+    p_room_type: roomType,
+    p_check_in: checkInStr,
+    p_check_out: checkOutStr,
+    p_full_name: fullName,
+    p_mobile: mobileNumber,
+    p_email: email,
+    p_adults: adults,
+    p_children: children,
+    p_special_requests: specialRequests,
+    p_user_id: user.id,
   });
 
-  if (insertError) {
-    console.error("insertError", insertError);
-    return new Response(JSON.stringify({ error: "Unable to create booking" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  if (rpcError) {
+    console.error("rpcError", rpcError);
+    return new Response(JSON.stringify({ error: "Unable to create booking" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
-  // Create invoice record
-  const invoiceId = crypto.randomUUID();
-  const invoiceNumber = `INV-${yyyymmdd(new Date())}-${invoiceId.slice(0, 6)}`;
+  if (result?.error) {
+    return new Response(JSON.stringify({ error: result.error }), {
+      status: 409,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
-  await supabase.from("invoices").insert({
-    id: invoiceId,
-    invoice_number: invoiceNumber,
-    booking_id: id,
-    guest_name: fullName,
-    guest_email: email,
-    guest_mobile: mobileNumber,
-    room_type: roomType,
-    check_in_date: checkInStr,
-    check_out_date: checkOutStr,
-    total_nights: nights,
-    room_price_per_night: pricePerNight,
-    subtotal,
-    tax_amount: tax,
-    total_amount: totalAmount,
-  });
-
-  return new Response(JSON.stringify({ bookingId }), {
+  return new Response(JSON.stringify({ bookingId: result.bookingId }), {
     status: 200,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });

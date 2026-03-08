@@ -393,6 +393,21 @@ export type Database = {
       }
     }
     Functions: {
+      create_booking_atomic: {
+        Args: {
+          p_adults: number
+          p_check_in: string
+          p_check_out: string
+          p_children: number
+          p_email: string
+          p_full_name: string
+          p_mobile: string
+          p_room_type: string
+          p_special_requests: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       get_blocked_dates: {
         Args: never
         Returns: {

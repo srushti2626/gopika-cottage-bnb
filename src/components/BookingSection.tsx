@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import {
   CalendarIcon,
   Users,
@@ -66,7 +66,7 @@ const BookingSection = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [addonServices, setAddonServices] = useState<AddonService[]>([]);
-  const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
+  const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>({});
 
   const { loading, checkAvailability, getPriceByRoomType, getUnavailableDatesForRoomType, rooms } =
     useRoomAvailability();
@@ -116,25 +116,36 @@ const BookingSection = () => {
   const totalGuests = adults + children;
 
   // Calculate add-on totals
-  const addonTotal = addonServices
-    .filter((a) => selectedAddons.has(a.id))
-    .reduce((sum, a) => {
-      if (a.price_type === "per_person") return sum + a.price * totalGuests;
-      return sum + a.price;
-    }, 0);
+  const addonTotal = addonServices.reduce((sum, a) => {
+    const qty = addonQuantities[a.id] || 0;
+    return sum + a.price * qty;
+  }, 0);
 
   const subtotal = roomSubtotal + addonTotal;
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + tax;
 
-  const toggleAddon = (id: string) => {
-    setSelectedAddons((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+  const incrementAddon = (id: string) => {
+    setAddonQuantities((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
+  };
+
+  const decrementAddon = (id: string) => {
+    setAddonQuantities((prev) => {
+      const current = prev[id] || 0;
+      if (current <= 1) {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      }
+      return { ...prev, [id]: current - 1 };
     });
   };
+
+  // Categorize add-on services
+  const breakfastAddons = addonServices.filter((a) => a.display_order >= 1 && a.display_order <= 14);
+  const vegAddons = addonServices.filter((a) => a.display_order >= 15 && a.display_order <= 18);
+  const nonVegAddons = addonServices.filter((a) => a.display_order >= 19 && a.display_order <= 26);
+  const otherAddons = addonServices.filter((a) => a.display_order >= 27);
 
   const unavailableDates = getUnavailableDatesForRoomType(roomType);
 
@@ -189,12 +200,12 @@ const BookingSection = () => {
     try {
       setSubmitting(true);
       const addonsPayload = addonServices
-        .filter((a) => selectedAddons.has(a.id))
+        .filter((a) => (addonQuantities[a.id] || 0) > 0)
         .map((a) => ({
           addonServiceId: a.id,
-          quantity: a.price_type === "per_person" ? totalGuests : 1,
+          quantity: addonQuantities[a.id],
           unitPrice: a.price,
-          totalPrice: a.price_type === "per_person" ? a.price * totalGuests : a.price,
+          totalPrice: a.price * addonQuantities[a.id],
         }));
 
       const { data, error } = await supabase.functions.invoke("create-booking", {
@@ -635,59 +646,81 @@ const BookingSection = () => {
                 {addonServices.length > 0 && (
                   <div className="lg:col-span-3">
                     <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-                      <Plus className="w-5 h-5 text-primary" />
+                      <UtensilsCrossed className="w-5 h-5 text-primary" />
                       Additional Services
                     </h3>
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {addonServices.map((addon) => {
-                        const isSelected = selectedAddons.has(addon.id);
-                        const addonCost = addon.price_type === "per_person"
-                          ? addon.price * totalGuests
-                          : addon.price;
-                        return (
-                          <div
-                            key={addon.id}
-                            className={cn(
-                              "flex items-start gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer",
-                              isSelected
-                                ? "border-primary bg-primary/5"
-                                : "border-border hover:border-primary/50"
-                            )}
-                            onClick={() => toggleAddon(addon.id)}
-                          >
-                            <Checkbox
-                              checked={isSelected}
-                              onCheckedChange={() => toggleAddon(addon.id)}
-                              className="mt-0.5"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <span className="font-semibold text-sm text-foreground">{addon.name}</span>
-                                  {addon.description && (
-                                    <p className="text-xs text-muted-foreground mt-0.5">{addon.description}</p>
+
+                    {/* Render categorized sections */}
+                    {[
+                      { label: "Breakfast Items", items: breakfastAddons },
+                      { label: "Veg Thali & Meals", items: vegAddons },
+                      { label: "Non-Veg Thali & Dishes", items: nonVegAddons },
+                      { label: "Activities", items: otherAddons },
+                    ]
+                      .filter((cat) => cat.items.length > 0)
+                      .map((cat) => (
+                        <div key={cat.label} className="mb-5">
+                          <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                            {cat.label}
+                          </h4>
+                          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {cat.items.map((addon) => {
+                              const qty = addonQuantities[addon.id] || 0;
+                              return (
+                                <div
+                                  key={addon.id}
+                                  className={cn(
+                                    "flex items-center justify-between p-3 rounded-lg border transition-all",
+                                    qty > 0
+                                      ? "border-primary bg-primary/5"
+                                      : "border-border hover:border-primary/40"
                                   )}
+                                >
+                                  <div className="min-w-0 mr-2">
+                                    <span className="font-medium text-sm text-foreground">{addon.name}</span>
+                                    <span className="text-sm text-primary font-semibold ml-2">₹{addon.price}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                    {qty > 0 ? (
+                                      <>
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          size="icon"
+                                          className="h-7 w-7 rounded-full"
+                                          onClick={() => decrementAddon(addon.id)}
+                                        >
+                                          -
+                                        </Button>
+                                        <span className="w-6 text-center text-sm font-semibold">{qty}</span>
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          size="icon"
+                                          className="h-7 w-7 rounded-full"
+                                          onClick={() => incrementAddon(addon.id)}
+                                        >
+                                          +
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-7 w-7 rounded-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                                        onClick={() => incrementAddon(addon.id)}
+                                      >
+                                        <Plus className="w-4 h-4" />
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
-                                <div className="text-right ml-2 flex-shrink-0">
-                                  <span className="font-semibold text-sm text-primary">
-                                    ₹{addon.price.toLocaleString()}
-                                  </span>
-                                  <p className="text-xs text-muted-foreground">
-                                    {addon.price_type === "per_person" ? "per person" : "flat rate"}
-                                  </p>
-                                </div>
-                              </div>
-                              {isSelected && (
-                                <p className="text-xs text-primary font-medium mt-1">
-                                  +₹{addonCost.toLocaleString()}
-                                  {addon.price_type === "per_person" && ` (${totalGuests} guest${totalGuests > 1 ? "s" : ""})`}
-                                </p>
-                              )}
-                            </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
-                    </div>
+                        </div>
+                      ))}
                   </div>
                 )}
 
@@ -722,14 +755,14 @@ const BookingSection = () => {
 
                     {/* Selected Add-ons */}
                     {addonServices
-                      .filter((a) => selectedAddons.has(a.id))
+                      .filter((a) => (addonQuantities[a.id] || 0) > 0)
                       .map((a) => {
-                        const cost = a.price_type === "per_person" ? a.price * totalGuests : a.price;
+                        const qty = addonQuantities[a.id];
+                        const cost = a.price * qty;
                         return (
                           <div key={a.id} className="flex justify-between items-center text-sm">
                             <span className="text-muted-foreground">
-                              {a.name}
-                              {a.price_type === "per_person" && ` (×${totalGuests})`}
+                              {a.name} ×{qty}
                             </span>
                             <span className="font-medium">₹{cost.toLocaleString()}</span>
                           </div>

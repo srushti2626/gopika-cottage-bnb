@@ -66,7 +66,7 @@ const BookingSection = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [addonServices, setAddonServices] = useState<AddonService[]>([]);
-  const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
+  const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>({});
 
   const { loading, checkAvailability, getPriceByRoomType, getUnavailableDatesForRoomType, rooms } =
     useRoomAvailability();

@@ -32,7 +32,7 @@ export function GalleryManager() {
   const [imageUrl, setImageUrl] = useState("");
   const [altText, setAltText] = useState("");
   const [caption, setCaption] = useState("");
-  const [spanClass, setSpanClass] = useState("");
+  const [spanClass, setSpanClass] = useState("normal");
   const [isActive, setIsActive] = useState(true);
 
   const fetchPhotos = async () => {

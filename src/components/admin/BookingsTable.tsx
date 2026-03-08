@@ -231,16 +231,23 @@ export function BookingsTable({ bookings, onRefresh }: BookingsTableProps) {
                       <Button
                         variant="ghost"
                         size="icon"
+                        title="Confirm Booking"
                         onClick={() => updateBookingStatus(booking.id, "confirmed")}
                         disabled={updating}
                       >
                         <Check className="h-4 w-4 text-green-600" />
                       </Button>
                     )}
+                    {(booking as any).cancellation_requested && booking.status !== "cancelled" && (
+                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5 mr-1">
+                        Cancel Request
+                      </Badge>
+                    )}
                     {(booking.status === "pending" || booking.status === "confirmed") && (
                       <Button
                         variant="ghost"
                         size="icon"
+                        title="Cancel Booking"
                         onClick={() => updateBookingStatus(booking.id, "cancelled")}
                         disabled={updating}
                       >

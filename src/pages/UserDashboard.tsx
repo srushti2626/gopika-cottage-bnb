@@ -496,6 +496,26 @@ export default function UserDashboard() {
             </div>
           </section>
         )}
+
+        {/* Cancellation Request Confirmation */}
+        {cancelBookingId && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setCancelBookingId(null)}>
+            <div className="bg-background rounded-lg shadow-xl max-w-md w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-lg font-semibold text-foreground">Request Cancellation</h3>
+              <p className="text-sm text-muted-foreground">
+                Are you sure you want to request cancellation for this booking? The admin will review and approve your request.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button variant="outline" size="sm" onClick={() => setCancelBookingId(null)}>
+                  No, Keep Booking
+                </Button>
+                <Button variant="destructive" size="sm" onClick={handleRequestCancellation} disabled={requestingCancel}>
+                  {requestingCancel ? "Sending…" : "Yes, Request Cancellation"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

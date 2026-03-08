@@ -717,8 +717,25 @@ const BookingSection = () => {
                         ₹{pricePerNight.toLocaleString()} × {nights || 0} night
                         {nights !== 1 ? "s" : ""}
                       </span>
-                      <span className="font-medium">₹{subtotal.toLocaleString()}</span>
+                      <span className="font-medium">₹{roomSubtotal.toLocaleString()}</span>
                     </div>
+
+                    {/* Selected Add-ons */}
+                    {addonServices
+                      .filter((a) => selectedAddons.has(a.id))
+                      .map((a) => {
+                        const cost = a.price_type === "per_person" ? a.price * totalGuests : a.price;
+                        return (
+                          <div key={a.id} className="flex justify-between items-center text-sm">
+                            <span className="text-muted-foreground">
+                              {a.name}
+                              {a.price_type === "per_person" && ` (×${totalGuests})`}
+                            </span>
+                            <span className="font-medium">₹{cost.toLocaleString()}</span>
+                          </div>
+                        );
+                      })}
+
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">GST (18%)</span>
                       <span className="font-medium">₹{tax.toLocaleString()}</span>

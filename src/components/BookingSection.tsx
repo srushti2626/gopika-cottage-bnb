@@ -315,7 +315,7 @@ const BookingSection = () => {
                 <span className="ml-2 text-muted-foreground">Loading availability...</span>
               </div>
             ) : (
-              <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
+              <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
                 {/* Guest Details */}
                 <div className="space-y-5">
                   <h3 className="text-xl font-semibold text-foreground mb-4">

@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      addon_services: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          price_type: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price: number
+          price_type?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          price_type?: string
+        }
+        Relationships: []
+      }
       blocked_dates: {
         Row: {
           blocked_by: string | null
@@ -45,6 +78,51 @@ export type Database = {
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_addons: {
+        Row: {
+          addon_service_id: string
+          booking_id: string
+          created_at: string
+          id: string
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          addon_service_id: string
+          booking_id: string
+          created_at?: string
+          id?: string
+          quantity?: number
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          addon_service_id?: string
+          booking_id?: string
+          created_at?: string
+          id?: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_addons_addon_service_id_fkey"
+            columns: ["addon_service_id"]
+            isOneToOne: false
+            referencedRelation: "addon_services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_addons_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
         ]

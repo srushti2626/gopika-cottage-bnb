@@ -299,22 +299,17 @@ export default function UserDashboard() {
                         }`}>
                           {booking.status}
                         </span>
+                        {booking.payment_status === "pay_at_checkin" && (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-800">
+                            Pay at Check-in
+                          </span>
+                        )}
                         {booking.payment_status === "paid" && (
                           <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-800">
                             ✓ Paid
                           </span>
                         )}
                         <div className="flex gap-2 mt-1">
-                          {booking.payment_status !== "paid" && booking.status !== "cancelled" && (
-                            <Button
-                              variant="hero"
-                              size="sm"
-                              onClick={() => navigate(`/booking-confirmation?id=${booking.booking_id}`)}
-                            >
-                              <CreditCard className="w-4 h-4 mr-1.5" />
-                              Pay Now
-                            </Button>
-                          )}
                           {invoice && (
                             <Button
                               variant="outline"

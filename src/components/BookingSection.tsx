@@ -284,7 +284,6 @@ const BookingSection = () => {
   const isFormValid =
     checkIn &&
     checkOut &&
-    availability.available &&
     fullName.trim().length >= 2 &&
     /^[6-9]\d{9}$/.test(mobileNumber) &&
     email.includes("@") &&

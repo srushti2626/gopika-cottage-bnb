@@ -20,8 +20,8 @@ const Navbar = () => {
     name: "Gallery",
     href: "#gallery"
   }, {
-    name: "Availability",
-    href: "#additional-services"
+    name: "Additional Services",
+    href: "/additional-services"
   }, {
     name: "Reviews",
     href: "#reviews"

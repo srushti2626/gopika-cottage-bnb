@@ -305,6 +305,16 @@ export default function UserDashboard() {
                           </span>
                         )}
                         <div className="flex gap-2 mt-1">
+                          {booking.payment_status !== "paid" && booking.status !== "cancelled" && (
+                            <Button
+                              variant="hero"
+                              size="sm"
+                              onClick={() => navigate(`/booking-confirmation?id=${booking.booking_id}`)}
+                            >
+                              <CreditCard className="w-4 h-4 mr-1.5" />
+                              Pay Now
+                            </Button>
+                          )}
                           {invoice && (
                             <Button
                               variant="outline"
@@ -312,7 +322,7 @@ export default function UserDashboard() {
                               onClick={() => generateInvoicePdf(booking, invoice)}
                             >
                               <Download className="w-4 h-4 mr-1.5" />
-                              Download Invoice
+                              Invoice
                             </Button>
                           )}
                           {(booking.status === "confirmed" || booking.status === "completed") && !reviewed && (
@@ -322,7 +332,7 @@ export default function UserDashboard() {
                               onClick={() => setReviewForm({ bookingId: booking.id, rating: 5, text: "" })}
                             >
                               <Star className="w-4 h-4 mr-1.5" />
-                              Write Review
+                              Review
                             </Button>
                           )}
                           {reviewed && (

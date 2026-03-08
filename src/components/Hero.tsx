@@ -28,7 +28,7 @@ const Hero = () => {
 
           {/* Heading */}
           <h1 className="heading-display text-background mb-6 animate-fade-in-up whitespace-nowrap text-center">
-            Your Perfect <span className="text-accent text-[#e8f1f2]">Beach Escape</span> Awaits
+            Your Perfect <span className="text-background">Beach Escape</span> Awaits
           </h1>
 
           {/* Subtitle */}

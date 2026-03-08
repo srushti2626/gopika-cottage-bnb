@@ -21,7 +21,7 @@ const Navbar = () => {
     href: "#gallery"
   }, {
     name: "Additional Services",
-    href: "#additional-services"
+    href: "#booking"
   }, {
     name: "Reviews",
     href: "#reviews"

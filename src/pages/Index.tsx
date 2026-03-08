@@ -4,7 +4,7 @@ import About from "@/components/About";
 import Amenities from "@/components/Amenities";
 import Gallery from "@/components/Gallery";
 import Pricing from "@/components/Pricing";
-import FoodMenu from "@/components/FoodMenu";
+
 import CottageRules from "@/components/CottageRules";
 import Testimonials from "@/components/Testimonials";
 import BookingSection from "@/components/BookingSection";
@@ -22,7 +22,7 @@ const Index = () => {
         <Amenities />
         <Gallery />
         <Pricing />
-        <FoodMenu />
+        
         <CottageRules />
         <Testimonials />
         <BookingSection />

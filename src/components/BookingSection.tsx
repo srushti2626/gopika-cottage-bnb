@@ -646,59 +646,81 @@ const BookingSection = () => {
                 {addonServices.length > 0 && (
                   <div className="lg:col-span-3">
                     <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-                      <Plus className="w-5 h-5 text-primary" />
+                      <UtensilsCrossed className="w-5 h-5 text-primary" />
                       Additional Services
                     </h3>
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {addonServices.map((addon) => {
-                        const isSelected = selectedAddons.has(addon.id);
-                        const addonCost = addon.price_type === "per_person"
-                          ? addon.price * totalGuests
-                          : addon.price;
-                        return (
-                          <div
-                            key={addon.id}
-                            className={cn(
-                              "flex items-start gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer",
-                              isSelected
-                                ? "border-primary bg-primary/5"
-                                : "border-border hover:border-primary/50"
-                            )}
-                            onClick={() => toggleAddon(addon.id)}
-                          >
-                            <Checkbox
-                              checked={isSelected}
-                              onCheckedChange={() => toggleAddon(addon.id)}
-                              className="mt-0.5"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <span className="font-semibold text-sm text-foreground">{addon.name}</span>
-                                  {addon.description && (
-                                    <p className="text-xs text-muted-foreground mt-0.5">{addon.description}</p>
+
+                    {/* Render categorized sections */}
+                    {[
+                      { label: "Breakfast Items", items: breakfastAddons },
+                      { label: "Veg Thali & Meals", items: vegAddons },
+                      { label: "Non-Veg Thali & Dishes", items: nonVegAddons },
+                      { label: "Activities", items: otherAddons },
+                    ]
+                      .filter((cat) => cat.items.length > 0)
+                      .map((cat) => (
+                        <div key={cat.label} className="mb-5">
+                          <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                            {cat.label}
+                          </h4>
+                          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {cat.items.map((addon) => {
+                              const qty = addonQuantities[addon.id] || 0;
+                              return (
+                                <div
+                                  key={addon.id}
+                                  className={cn(
+                                    "flex items-center justify-between p-3 rounded-lg border transition-all",
+                                    qty > 0
+                                      ? "border-primary bg-primary/5"
+                                      : "border-border hover:border-primary/40"
                                   )}
+                                >
+                                  <div className="min-w-0 mr-2">
+                                    <span className="font-medium text-sm text-foreground">{addon.name}</span>
+                                    <span className="text-sm text-primary font-semibold ml-2">₹{addon.price}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                    {qty > 0 ? (
+                                      <>
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          size="icon"
+                                          className="h-7 w-7 rounded-full"
+                                          onClick={() => decrementAddon(addon.id)}
+                                        >
+                                          -
+                                        </Button>
+                                        <span className="w-6 text-center text-sm font-semibold">{qty}</span>
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          size="icon"
+                                          className="h-7 w-7 rounded-full"
+                                          onClick={() => incrementAddon(addon.id)}
+                                        >
+                                          +
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-7 w-7 rounded-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                                        onClick={() => incrementAddon(addon.id)}
+                                      >
+                                        <Plus className="w-4 h-4" />
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
-                                <div className="text-right ml-2 flex-shrink-0">
-                                  <span className="font-semibold text-sm text-primary">
-                                    ₹{addon.price.toLocaleString()}
-                                  </span>
-                                  <p className="text-xs text-muted-foreground">
-                                    {addon.price_type === "per_person" ? "per person" : "flat rate"}
-                                  </p>
-                                </div>
-                              </div>
-                              {isSelected && (
-                                <p className="text-xs text-primary font-medium mt-1">
-                                  +₹{addonCost.toLocaleString()}
-                                  {addon.price_type === "per_person" && ` (${totalGuests} guest${totalGuests > 1 ? "s" : ""})`}
-                                </p>
-                              )}
-                            </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
-                    </div>
+                        </div>
+                      ))}
                   </div>
                 )}
 

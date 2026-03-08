@@ -7,7 +7,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
-function generateInvoicePdf(booking: Tables<"bookings">, invoice: Tables<"invoices">) {
+function generateInvoicePdf(booking: Tables<"bookings">, invoice: Tables<"invoices">, addons: BookingAddon[] = []) {
   const roomLabel = booking.room_type === "ac" ? "AC Room" : "Non-AC Room";
   const subtotal = invoice.subtotal;
   const tax = invoice.tax_amount;
@@ -107,6 +107,14 @@ function generateInvoicePdf(booking: Tables<"bookings">, invoice: Tables<"invoic
     </table>
   </div>
 
+  ${addons.length > 0 ? `
+  <div class="section">
+    <h3>Additional Services</h3>
+    <table>
+      ${addons.map((a) => `<tr><td>${a.addon_services?.name || "Add-on"}${a.quantity > 1 ? ` (×${a.quantity})` : ""}</td><td style="text-align:right">₹${a.total_price.toLocaleString("en-IN")}</td></tr>`).join("")}
+    </table>
+  </div>` : ""}
+
   <div class="section">
     <h3>Price Breakdown</h3>
     <table>
@@ -135,6 +143,15 @@ function generateInvoicePdf(booking: Tables<"bookings">, invoice: Tables<"invoic
   }
 }
 
+interface BookingAddon {
+  id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  addon_service_id: string;
+  addon_services?: { name: string; price_type: string } | null;
+}
+
 interface ReviewForm {
   bookingId: string;
   rating: number;
@@ -148,6 +165,7 @@ export default function UserDashboard() {
   const [bookings, setBookings] = useState<Tables<"bookings">[]>([]);
   const [invoices, setInvoices] = useState<Tables<"invoices">[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [bookingAddons, setBookingAddons] = useState<Record<string, BookingAddon[]>>({});
   const [loading, setLoading] = useState(true);
   const [reviewForm, setReviewForm] = useState<ReviewForm | null>(null);
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -172,6 +190,25 @@ export default function UserDashboard() {
     setBookings(bookingsRes.data ?? []);
     setInvoices(invoicesRes.data ?? []);
     setReviews(reviewsRes.data ?? []);
+
+    // Fetch add-ons for all bookings
+    if (bookingsRes.data && bookingsRes.data.length > 0) {
+      const bookingIds = bookingsRes.data.map((b) => b.id);
+      const { data: addonsData } = await supabase
+        .from("booking_addons")
+        .select("*, addon_services(name, price_type)")
+        .in("booking_id", bookingIds);
+
+      if (addonsData) {
+        const grouped: Record<string, BookingAddon[]> = {};
+        (addonsData as BookingAddon[]).forEach((a: any) => {
+          if (!grouped[a.booking_id]) grouped[a.booking_id] = [];
+          grouped[a.booking_id].push(a);
+        });
+        setBookingAddons(grouped);
+      }
+    }
+
     setLoading(false);
   }, []);
 
@@ -288,6 +325,11 @@ export default function UserDashboard() {
                         <p className="text-sm text-muted-foreground capitalize">
                           Room: {booking.room_type === "ac" ? "AC" : "Non-AC"} · {booking.adults} adults, {booking.children} children
                         </p>
+                        {bookingAddons[booking.id]?.length > 0 && (
+                          <p className="text-xs text-primary mt-0.5">
+                            + {bookingAddons[booking.id].map((a) => a.addon_services?.name || "Add-on").join(", ")}
+                          </p>
+                        )}
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <p className="font-semibold text-foreground">₹{booking.total_amount.toLocaleString("en-IN")}</p>
@@ -314,7 +356,7 @@ export default function UserDashboard() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => generateInvoicePdf(booking, invoice)}
+                              onClick={() => generateInvoicePdf(booking, invoice, bookingAddons[booking.id] || [])}
                             >
                               <Download className="w-4 h-4 mr-1.5" />
                               Invoice

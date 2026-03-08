@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   CalendarIcon,
   Users,
@@ -17,6 +18,9 @@ import {
   Baby,
   User,
   LogIn,
+  UtensilsCrossed,
+  MapPin,
+  Plus,
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -25,6 +29,15 @@ import type { Database } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+
+interface AddonService {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  price_type: "per_person" | "flat";
+  display_order: number;
+}
 
 type RoomType = Database["public"]["Enums"]["room_type"];
 
@@ -52,9 +65,23 @@ const BookingSection = () => {
   const [specialRequests, setSpecialRequests] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [addonServices, setAddonServices] = useState<AddonService[]>([]);
+  const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
 
   const { loading, checkAvailability, getPriceByRoomType, getUnavailableDatesForRoomType, rooms } =
     useRoomAvailability();
+
+  // Fetch add-on services
+  useEffect(() => {
+    supabase
+      .from("addon_services")
+      .select("*")
+      .eq("is_active", true)
+      .order("display_order")
+      .then(({ data }) => {
+        if (data) setAddonServices(data as AddonService[]);
+      });
+  }, []);
 
   // Check auth state
   useEffect(() => {
@@ -85,10 +112,29 @@ const BookingSection = () => {
   const availability = checkAvailability(checkIn, checkOut, roomType);
   const pricePerNight = getPriceByRoomType(roomType);
   const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
-  const subtotal = nights * pricePerNight;
+  const roomSubtotal = nights * pricePerNight;
+  const totalGuests = adults + children;
+
+  // Calculate add-on totals
+  const addonTotal = addonServices
+    .filter((a) => selectedAddons.has(a.id))
+    .reduce((sum, a) => {
+      if (a.price_type === "per_person") return sum + a.price * totalGuests;
+      return sum + a.price;
+    }, 0);
+
+  const subtotal = roomSubtotal + addonTotal;
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + tax;
-  const totalGuests = adults + children;
+
+  const toggleAddon = (id: string) => {
+    setSelectedAddons((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const unavailableDates = getUnavailableDatesForRoomType(roomType);
 
@@ -142,6 +188,15 @@ const BookingSection = () => {
 
     try {
       setSubmitting(true);
+      const addonsPayload = addonServices
+        .filter((a) => selectedAddons.has(a.id))
+        .map((a) => ({
+          addonServiceId: a.id,
+          quantity: a.price_type === "per_person" ? totalGuests : 1,
+          unitPrice: a.price,
+          totalPrice: a.price_type === "per_person" ? a.price * totalGuests : a.price,
+        }));
+
       const { data, error } = await supabase.functions.invoke("create-booking", {
         body: {
           roomType,
@@ -153,6 +208,7 @@ const BookingSection = () => {
           adults,
           children,
           specialRequests: specialRequests.trim() ? specialRequests.trim() : null,
+          addons: addonsPayload,
         },
       });
 
@@ -575,6 +631,66 @@ const BookingSection = () => {
                   )}
                 </div>
 
+                {/* Additional Services */}
+                {addonServices.length > 0 && (
+                  <div className="lg:col-span-3">
+                    <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <Plus className="w-5 h-5 text-primary" />
+                      Additional Services
+                    </h3>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {addonServices.map((addon) => {
+                        const isSelected = selectedAddons.has(addon.id);
+                        const addonCost = addon.price_type === "per_person"
+                          ? addon.price * totalGuests
+                          : addon.price;
+                        return (
+                          <div
+                            key={addon.id}
+                            className={cn(
+                              "flex items-start gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer",
+                              isSelected
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover:border-primary/50"
+                            )}
+                            onClick={() => toggleAddon(addon.id)}
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleAddon(addon.id)}
+                              className="mt-0.5"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <span className="font-semibold text-sm text-foreground">{addon.name}</span>
+                                  {addon.description && (
+                                    <p className="text-xs text-muted-foreground mt-0.5">{addon.description}</p>
+                                  )}
+                                </div>
+                                <div className="text-right ml-2 flex-shrink-0">
+                                  <span className="font-semibold text-sm text-primary">
+                                    ₹{addon.price.toLocaleString()}
+                                  </span>
+                                  <p className="text-xs text-muted-foreground">
+                                    {addon.price_type === "per_person" ? "per person" : "flat rate"}
+                                  </p>
+                                </div>
+                              </div>
+                              {isSelected && (
+                                <p className="text-xs text-primary font-medium mt-1">
+                                  +₹{addonCost.toLocaleString()}
+                                  {addon.price_type === "per_person" && ` (${totalGuests} guest${totalGuests > 1 ? "s" : ""})`}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Price Summary */}
                 <div className="bg-secondary/50 rounded-xl p-6 h-fit lg:sticky lg:top-4">
                   <h3 className="text-xl font-semibold text-foreground mb-6">
@@ -601,8 +717,25 @@ const BookingSection = () => {
                         ₹{pricePerNight.toLocaleString()} × {nights || 0} night
                         {nights !== 1 ? "s" : ""}
                       </span>
-                      <span className="font-medium">₹{subtotal.toLocaleString()}</span>
+                      <span className="font-medium">₹{roomSubtotal.toLocaleString()}</span>
                     </div>
+
+                    {/* Selected Add-ons */}
+                    {addonServices
+                      .filter((a) => selectedAddons.has(a.id))
+                      .map((a) => {
+                        const cost = a.price_type === "per_person" ? a.price * totalGuests : a.price;
+                        return (
+                          <div key={a.id} className="flex justify-between items-center text-sm">
+                            <span className="text-muted-foreground">
+                              {a.name}
+                              {a.price_type === "per_person" && ` (×${totalGuests})`}
+                            </span>
+                            <span className="font-medium">₹{cost.toLocaleString()}</span>
+                          </div>
+                        );
+                      })}
+
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">GST (18%)</span>
                       <span className="font-medium">₹{tax.toLocaleString()}</span>

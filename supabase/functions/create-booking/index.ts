@@ -121,6 +121,7 @@ Deno.serve(async (req) => {
   const adults = Number(body?.adults ?? NaN);
   const children = Number(body?.children ?? NaN);
   const specialRequests = body?.specialRequests == null ? null : String(body?.specialRequests).trim();
+  const addons: { addonServiceId: string; quantity: number; unitPrice: number; totalPrice: number }[] = Array.isArray(body?.addons) ? body.addons : [];
 
   // Validation
   if (roomType !== "ac" && roomType !== "non_ac") {
@@ -193,6 +194,56 @@ Deno.serve(async (req) => {
       status: 409,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+  }
+
+  // Save add-ons if any were selected
+  if (addons.length > 0 && result?.bookingId) {
+    // Look up the booking to get its UUID
+    const { data: bookingRow } = await supabase
+      .from("bookings")
+      .select("id, total_amount")
+      .eq("booking_id", result.bookingId)
+      .single();
+
+    if (bookingRow) {
+      const addonRows = addons.map((a: any) => ({
+        booking_id: bookingRow.id,
+        addon_service_id: a.addonServiceId,
+        quantity: a.quantity,
+        unit_price: a.unitPrice,
+        total_price: a.totalPrice,
+      }));
+
+      await supabase.from("booking_addons").insert(addonRows);
+
+      // Update the booking total to include add-on costs
+      const addonTotal = addons.reduce((sum: number, a: any) => sum + a.totalPrice, 0);
+      const addonTax = Math.round(addonTotal * 0.18);
+      const newTotal = bookingRow.total_amount + addonTotal + addonTax;
+
+      await supabase
+        .from("bookings")
+        .update({ total_amount: newTotal })
+        .eq("id", bookingRow.id);
+
+      // Update the invoice total too
+      const { data: invoiceRow } = await supabase
+        .from("invoices")
+        .select("id, subtotal, tax_amount, total_amount")
+        .eq("booking_id", bookingRow.id)
+        .single();
+
+      if (invoiceRow) {
+        await supabase
+          .from("invoices")
+          .update({
+            subtotal: invoiceRow.subtotal + addonTotal,
+            tax_amount: invoiceRow.tax_amount + addonTax,
+            total_amount: invoiceRow.total_amount + addonTotal + addonTax,
+          })
+          .eq("id", invoiceRow.id);
+      }
+    }
   }
 
   return new Response(JSON.stringify({ bookingId: result.bookingId }), {
